@@ -27,7 +27,7 @@ class AirtableHandler extends Handler
         }
 
         $creatingJobs = [];
-        foreach(array_chunk($creating, 50) as $data) {
+        foreach(array_chunk($creating, 10) as $data) {
             $creatingJobs[] = new CreateRecords(
                 $data,
                 $this->config('apiKey'),

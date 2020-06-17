@@ -101,7 +101,7 @@ class AirtableHandler implements Handler
     protected function createRecords(array $data)
     {
         $creatingJobs = [];
-        foreach(array_chunk($data, 50) as $rows) {
+        foreach(array_chunk($data, 10) as $rows) {
             $creatingJobs[] = new CreateRecords(
                 $rows,
                 $this->apiKey, 
