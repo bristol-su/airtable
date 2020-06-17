@@ -100,10 +100,18 @@ class AirtableHandler implements Handler
 
     protected function createRecords(array $data)
     {
+        $creatingJobs = [];
+        foreach(array_chunk($data, 50) as $rows) {
+            $creatingJobs[] = new CreateRecords(
+                $rows,
+                $this->apiKey, 
+                $this->baseId,
+                $this->tableName
+            );
+        }
+        
         dispatch(
             new FlushRows($this->apiKey, $this->baseId, $this->tableName)
-        )->chain([
-                new CreateRecords($data, $this->apiKey, $this->baseId, $this->tableName)
-        ]);
+        )->chain($creatingJobs);
     }
 }

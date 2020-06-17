@@ -26,19 +26,22 @@ class AirtableHandler extends Handler
             $creating[] = $item->toArray();
         }
 
+        $creatingJobs = [];
+        foreach(array_chunk($creating, 50) as $data) {
+            $creatingJobs[] = new CreateRecords(
+                $data,
+                $this->config('apiKey'),
+                $this->config('baseId'),
+                $this->config('tableName')
+            );
+        }
+        
         dispatch(
             new FlushRows(
                 $this->config('apiKey'),
                 $this->config('baseId'),
                 $this->config('tableName')
             )
-        )->chain([
-            new CreateRecords(
-                $creating,
-                $this->config('apiKey'),
-                $this->config('baseId'),
-                $this->config('tableName')
-            )
-        ]);
+        )->chain($creatingJobs);
     }
 }
