@@ -45,4 +45,9 @@ class CreateRecords implements ShouldQueue
         $airTable->createRows($this->data, true);
     }
 
+    public function retryUntil() :  \DateTime
+    {
+        return now()->addHours(5);
+    }
+
 }
