@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - (17/06/2020)
+
+### Changed
+- Rate limit CreateRecords job 
+- No chaining of jobs to save on message size space
+
 ## [1.0.1] - (17/06/2020)
 
 ### Changed
@@ -22,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AirTable Progress integration
 - AirTable Control Exporter integration
 
-[Unreleased]: https://github.com/bristol-su/control/compare/v1.0...HEAD
+[Unreleased]: https://github.com/bristol-su/control/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/bristol-su/control/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/bristol-su/control/compare/v1.0...v1.0.1
 [1.0]: https://github.com/bristol-su/control/releases/tag/v1.0
