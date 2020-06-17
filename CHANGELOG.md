@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - (17/06/2020)
+
+### Changed
+- Dispatch batched events for row creation to avoid a message size limit
+
 ## [1.0] - (16/06/2020)
 
 > First Release
@@ -18,4 +23,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AirTable Control Exporter integration
 
 [Unreleased]: https://github.com/bristol-su/control/compare/v1.0...HEAD
+[1.0.1]: https://github.com/bristol-su/control/compare/v1.0...v1.0.1
 [1.0]: https://github.com/bristol-su/control/releases/tag/v1.0

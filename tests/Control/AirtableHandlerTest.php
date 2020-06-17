@@ -20,7 +20,7 @@ class AirtableHandlerTest extends TestCase
             'baseId' => 'myBaseId',
             'tableName' => 'myTableName'
         ]);
-        $handler->export([]);
+        $handler->export([$this->newRole()]);
         
         $jobWasValid = function(CreateRecords $job) {
             return true;
