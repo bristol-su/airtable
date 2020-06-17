@@ -13,13 +13,13 @@
         "php": "^7.4",
         "ext-json": "*",
         "guzzlehttp/guzzle": "^6.5",
-        "bristol-su/support": "4.6.0",
-        "bristol-su/control": "2.1.4"
+        "bristol-su/support": "^4.6.0",
+        "bristol-su/control": "^2.1.4"
     },
     "require-dev": {
         "orchestra/testbench": "^4.0",
         "phpstan/phpstan": "^0.12.8",
-        "phpspec/prophecy-phpunit": "2.0.0",
+        "phpspec/prophecy-phpunit": "^2.0.0",
         "brianium/paratest": "^4.0"
     },
     "extra": {
