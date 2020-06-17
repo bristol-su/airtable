@@ -6,11 +6,12 @@ use BristolSU\AirTable\AirTable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
 use Spatie\RateLimitedMiddleware\RateLimited;
 
 class CreateRecords implements ShouldQueue
 {
-    use Dispatchable, Queueable;
+    use Dispatchable, Queueable, InteractsWithQueue;
 
     private array $data;
     private string $apiKey;
