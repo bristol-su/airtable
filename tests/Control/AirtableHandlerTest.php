@@ -22,13 +22,9 @@ class AirtableHandlerTest extends TestCase
         ]);
         $handler->export([$this->newRole()]);
         
-        $jobWasValid = function(CreateRecords $job) {
-            return true;
-        };
+        Bus::assertDispatched(CreateRecords::class);
         
-        Bus::assertDispatched(FlushRows::class, function($job) use ($jobWasValid) {
-            return count($job->chained) === 1 && $jobWasValid(unserialize($job->chained[0]));
-        });
+        Bus::assertDispatched(FlushRows::class);
         
     }
     

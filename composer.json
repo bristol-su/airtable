@@ -14,7 +14,8 @@
         "ext-json": "*",
         "guzzlehttp/guzzle": "^6.5",
         "bristol-su/support": "^4.6.0",
-        "bristol-su/control": "^2.1.4"
+        "bristol-su/control": "^2.1.4",
+        "spatie/laravel-rate-limited-job-middleware": "^1.4"
     },
     "require-dev": {
         "orchestra/testbench": "^4.0",

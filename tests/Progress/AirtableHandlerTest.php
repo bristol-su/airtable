@@ -40,15 +40,13 @@ class AirtableHandlerTest extends TestCase
         $baseIdProperty = $createRecordsReflection->getProperty('baseId');
         $baseIdProperty->setAccessible(true);
 
-        $isJobValid = function(CreateRecords $createRecordsJob) use ($apiKeyProperty, $tableNameProperty, $baseIdProperty) {
+        Bus::assertDispatched(CreateRecords::class, function(CreateRecords $createRecordsJob) use ($apiKeyProperty, $tableNameProperty, $baseIdProperty) {
             return $apiKeyProperty->getValue($createRecordsJob) === 'myApiKey'
                 && $tableNameProperty->getValue($createRecordsJob) === 'myTableName'
                 && $baseIdProperty->getValue($createRecordsJob) === 'myBaseId';
-        };
-        
-        Bus::assertDispatched(FlushRows::class, function(FlushRows $job) use ($isJobValid) {
-            return count($job->chained) === 1 && $isJobValid(unserialize($job->chained[0]));
         });
+        
+        Bus::assertDispatched(FlushRows::class);
 
     }
 
@@ -89,7 +87,7 @@ class AirtableHandlerTest extends TestCase
         $dataProperty = $createRecordsReflection->getProperty('data');
         $dataProperty->setAccessible(true);
 
-        $isJobValid = function(CreateRecords $job) use ($dataProperty, $activityInstance, $activity, $group, $now) {
+        Bus::assertDispatched(CreateRecords::class, function(CreateRecords $job) use ($dataProperty, $activityInstance, $activity, $group, $now) {
             $data = $dataProperty->getValue($job);
             Assert::assertArrayHasKey(0, $data);
             Assert::assertEquals([
@@ -109,10 +107,8 @@ class AirtableHandlerTest extends TestCase
                 'Snapshot Date' => $now->format(\DateTime::ATOM)
             ], $data[0]);
             return true;
-        };
-        Bus::assertDispatched(FlushRows::class, function(FlushRows $job) use ($isJobValid) {
-            return count($job->chained) === 1 && $isJobValid(unserialize($job->chained[0]));
         });
+        Bus::assertDispatched(FlushRows::class);
         
     }
 
@@ -172,7 +168,7 @@ class AirtableHandlerTest extends TestCase
         $dataProperty = $createRecordsReflection->getProperty('data');
         $dataProperty->setAccessible(true);
 
-        $isJobValid = function(CreateRecords $job) use ($dataProperty, $activityInstance1, $activityInstance2, $activity, $group1, $group2, $now) {
+        Bus::assertDispatched(CreateRecords::class, function(CreateRecords $job) use ($dataProperty, $activityInstance1, $activityInstance2, $activity, $group1, $group2, $now) {
             $data = $dataProperty->getValue($job);
             Assert::assertArrayHasKey(0, $data);
             Assert::assertEquals([
@@ -210,10 +206,8 @@ class AirtableHandlerTest extends TestCase
                 'Snapshot Date' => $now->format(\DateTime::ATOM)
             ], $data[1]);
             return true;
-        };
-        Bus::assertDispatched(FlushRows::class, function(FlushRows $job) use ($isJobValid) {
-            return count($job->chained) === 1 && $isJobValid(unserialize($job->chained[0]));
         });
+        Bus::assertDispatched(FlushRows::class);
 
     }
     

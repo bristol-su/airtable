@@ -6,6 +6,7 @@ use BristolSU\AirTable\AirTable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Spatie\RateLimitedMiddleware\RateLimited;
 
 class CreateRecords implements ShouldQueue
 {
@@ -24,6 +25,17 @@ class CreateRecords implements ShouldQueue
         $this->tableName = $tableName;
     }
 
+    public function middleware()
+    {
+        $rateLimitedMiddleware = (new RateLimited())
+            ->key('airtable')
+            ->allow(1)
+            ->everySeconds(1)
+            ->releaseAfterSeconds(3);
+
+        return [$rateLimitedMiddleware];
+    }
+    
     public function handle(AirTable $airTable)
     {
         $airTable->setApiKey($this->apiKey);
