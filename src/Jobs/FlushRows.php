@@ -27,7 +27,15 @@ class FlushRows implements ShouldQueue
         $airTable->setApiKey($this->apiKey);
         $airTable->setBaseId($this->baseId);
         $airTable->setTableName($this->tableName);
-        $airTable->flushTable();
+        $ids = $airTable->getIdsFromTable();
+        foreach(array_chunk($ids, 50) as $idsToDelete) {
+            dispatch(new DeleteRows(
+                $idsToDelete,
+                $this->apiKey,
+                $this->baseId,
+                $this->tableName)
+            );
+        }
     }
 
 }
