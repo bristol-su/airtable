@@ -8,6 +8,7 @@ use BristolSU\ControlDB\Export\FormattedItem;
 use BristolSU\ControlDB\Export\Handler\Handler;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class AirtableHandler extends Handler
 {
@@ -26,21 +27,36 @@ class AirtableHandler extends Handler
             $creating[] = $item->toArray();
         }
 
+        $this->log('Flushing rows');
+        
         dispatch_now(
-            new FlushRows(
+            (new FlushRows(
                 $this->config('apiKey'),
                 $this->config('baseId'),
                 $this->config('tableName')
-            )
+            ))->withDebug($this->config('debug', false))
         );
 
+        $this->log('Flushed rows. Creating records');
+
+
         foreach(array_chunk($creating, 10) as $data) {
-            dispatch(new CreateRecords(
+            dispatch((new CreateRecords(
                 $data,
                 $this->config('apiKey'),
                 $this->config('baseId'),
                 $this->config('tableName')
-            ));
+            ))->withDebug($this->config('debug', false)));
+        }
+
+        $this->log('Created Records');
+
+    }
+
+    private function log(string $string)
+    {
+        if($this->config('debug', false)) {
+            Log::debug($string);
         }
     }
 }

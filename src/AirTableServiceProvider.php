@@ -32,7 +32,8 @@ class AirTableServiceProvider extends ServiceProvider
             return new ProgressAirTableHandler(
                 $config['baseId'],
                 $config['tableName'],
-                $config['apiKey']
+                $config['apiKey'],
+                (array_key_exists('debug', $config) ? (bool) $config['debug'] : false)
             );
         });
 

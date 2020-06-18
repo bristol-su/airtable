@@ -12,6 +12,7 @@ use BristolSU\Support\Progress\Handlers\Handler;
 use BristolSU\Support\Progress\ModuleInstanceProgress;
 use BristolSU\Support\Progress\Progress;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AirtableHandler implements Handler
 {
@@ -19,12 +20,14 @@ class AirtableHandler implements Handler
     protected string $baseId;
     protected string $tableName;
     protected string $apiKey;
+    private bool $debug;
 
-    public function __construct(string $baseId, string $tableName, string $apiKey)
+    public function __construct(string $baseId, string $tableName, string $apiKey, bool $debug = false)
     {
         $this->baseId = $baseId;
         $this->tableName = $tableName;
         $this->apiKey = $apiKey;
+        $this->debug = $debug;
     }
 
     protected function filterModules(\Closure $filter, Progress $progress, $moduleInstances)
@@ -87,6 +90,7 @@ class AirtableHandler implements Handler
     public function saveMany(array $progresses): void
     {
         $data = [];
+        $this->log(sprintf('Parsing %d progresses', count($progresses)));
         foreach ($progresses as $progress) {
             $data[] = $this->parseProgress($progress);
         }
@@ -100,18 +104,30 @@ class AirtableHandler implements Handler
 
     protected function createRecords(array $data)
     {
-        
+        $this->log('Flushing rows');
         dispatch_now(
-            new FlushRows($this->apiKey, $this->baseId, $this->tableName)
+            (new FlushRows($this->apiKey, $this->baseId, $this->tableName))
+                ->withDebug($this->debug)
         );
         
+        $this->log('Flushed rows');
+        
         foreach(array_chunk($data, 10) as $rows) {
-            dispatch(new CreateRecords(
+            dispatch((new CreateRecords(
                 $rows,
                 $this->apiKey,
                 $this->baseId,
                 $this->tableName
-            ));
+            ))->withDebug($this->debug));
+        }
+        
+        $this->log('Created Records');
+    }
+
+    private function log(string $string)
+    {
+        if($this->debug) {
+            Log::debug($string);
         }
     }
 }
