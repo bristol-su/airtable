@@ -1,0 +1,6 @@
+name: integration-airtable
+title: AirTable
+version: develop
+start_page: ROOT:index.adoc
+nav:
+ - modules/ROOT/nav.adoc
