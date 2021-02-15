@@ -5,6 +5,7 @@ namespace BristolSU\AirTable\Progress;
 
 use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\AirTable\Jobs\FlushRows;
+use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\Support\ActivityInstance\Contracts\ActivityInstanceRepository;
 use BristolSU\Support\ModuleInstance\Contracts\ModuleInstanceRepository;
 use BristolSU\Support\ModuleInstance\ModuleInstance;
@@ -50,6 +51,7 @@ class AirtableHandler implements Handler
             });
 
         return [
+            'id' => $progress->getActivityInstanceId(),
             'Participant Name' => $activityInstance->participantName(),
             'Mandatory Modules' => $this->filterModules(function (ModuleInstanceProgress $moduleInstanceProgress) {
                 return $moduleInstanceProgress->isMandatory();
@@ -94,7 +96,17 @@ class AirtableHandler implements Handler
         foreach ($progresses as $progress) {
             $data[] = $this->parseProgress($progress);
         }
-        $this->createRecords($data);
+        $this->updateRecords($data);
+    }
+
+    public function updateMany(array $progresses): void
+    {
+        $data = [];
+        $this->log(sprintf('Parsing %d progresses', count($progresses)));
+        foreach ($progresses as $progress) {
+            $data[] = $this->parseProgress($progress);
+        }
+        $this->updateRecords($data);
     }
 
     public function save(Progress $progress): void
@@ -122,6 +134,22 @@ class AirtableHandler implements Handler
         }
         
         $this->log('Created Records');
+    }
+
+    public function updateRecords(array $data)
+    {
+        $this->log('Updating records');
+
+        foreach(array_chunk($data, 10) as $rows) {
+            dispatch((new UpdateRecords(
+                $rows,
+                $this->apiKey,
+                $this->baseId,
+                $this->tableName
+            ))->withDebug($this->debug));
+        }
+
+        $this->log('Updated Records');
     }
 
     private function log(string $string)

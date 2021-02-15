@@ -160,9 +160,30 @@ class AirTable
         foreach($rows as $row) {
             $data[] = ['fields' => $row];
         }
-        
+
         $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
             $this->request('post', [
+                'records' => $rowsToCreate, 'typecast' => $typecast
+            ]);
+        });
+    }
+
+
+    /**
+     * Update Rows.
+     *
+     * @param array $rows An array of data (see createRows for example)
+     * @param bool $typecast
+     */
+    public function updateRows(array $rows, bool $typecast = true)
+    {
+        $data = [];
+        foreach($rows as $row) {
+            $data[] = ['id' => $row['id'], 'fields' => $row];
+        }
+
+        $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
+            $this->request('patch', [
                 'records' => $rowsToCreate, 'typecast' => $typecast
             ]);
         });
