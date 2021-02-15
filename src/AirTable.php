@@ -179,7 +179,10 @@ class AirTable
     {
         $data = [];
         foreach($rows as $row) {
-            $data[] = ['id' => $row['id'], 'fields' => $row];
+            // Create a temp instance of ID and remove from fields:
+            $id = $row['id'];
+            unset($row['id']);
+            $data[] = ['id' => $id, 'fields' => $row];
         }
 
         $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
