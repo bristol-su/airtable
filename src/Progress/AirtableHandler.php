@@ -39,7 +39,7 @@ class AirtableHandler implements Handler
             })->values()->toArray();
     }
 
-    protected function parseProgress(Progress $progress)
+    protected function parseProgress(Progress $progress, bool $includeId = false)
     {
         $activityInstance = app(ActivityInstanceRepository::class)
             ->getById($progress->getActivityInstanceId());
@@ -50,8 +50,7 @@ class AirtableHandler implements Handler
                 return $carry;
             });
 
-        return [
-            'id' => $progress->getActivityInstanceId(),
+        $data = [
             'Participant Name' => $activityInstance->participantName(),
             'Mandatory Modules' => $this->filterModules(function (ModuleInstanceProgress $moduleInstanceProgress) {
                 return $moduleInstanceProgress->isMandatory();
@@ -84,6 +83,12 @@ class AirtableHandler implements Handler
             'Snapshot Date' => $progress->getTimestamp()->format(\DateTime::ATOM)
         ];
 
+        if($includeId) {
+
+            $data['id'] = $activityInstance->id();
+        }
+
+        return $data;
     }
 
     /**
@@ -104,7 +109,7 @@ class AirtableHandler implements Handler
         $data = [];
         $this->log(sprintf('Parsing %d progresses', count($progresses)));
         foreach ($progresses as $progress) {
-            $data[] = $this->parseProgress($progress);
+            $data[] = $this->parseProgress($progress, true);
         }
         $this->updateRecords($data);
     }
@@ -116,14 +121,7 @@ class AirtableHandler implements Handler
 
     protected function createRecords(array $data)
     {
-        $this->log('Flushing rows');
-        dispatch_now(
-            (new FlushRows($this->apiKey, $this->baseId, $this->tableName))
-                ->withDebug($this->debug)
-        );
-        
-        $this->log('Flushed rows');
-        
+
         foreach(array_chunk($data, 10) as $rows) {
             dispatch((new CreateRecords(
                 $rows,
