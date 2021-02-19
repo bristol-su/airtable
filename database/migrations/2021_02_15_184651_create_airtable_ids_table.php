@@ -15,7 +15,7 @@ class CreateAirtableIdsTable extends Migration
     {
         Schema::create('airtable_ids', function(Blueprint $table) {
             $table->string('airtable_id')->unique();
-            $table->unsignedBigInteger('activity_instance_id');
+            $table->unsignedBigInteger('activity_instance_id')->unique();
             $table->timestamps();
         });
     }
