@@ -244,12 +244,4 @@ class AirTable
         }
         return $ids;
     }
-
-    public function flushTable()
-    {
-        $this->deleteRows(
-            $this->getIdsFromTable()
-        );
-    }
-    
 }

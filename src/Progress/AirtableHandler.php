@@ -4,7 +4,6 @@
 namespace BristolSU\AirTable\Progress;
 
 use BristolSU\AirTable\Jobs\CreateRecords;
-use BristolSU\AirTable\Jobs\FlushRows;
 use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\Support\ActivityInstance\Contracts\ActivityInstanceRepository;
 use BristolSU\Support\ModuleInstance\Contracts\ModuleInstanceRepository;
