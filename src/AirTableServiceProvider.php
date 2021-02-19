@@ -3,17 +3,21 @@
 namespace BristolSU\AirTable;
 
 use BristolSU\AirTable\Control\AirtableHandler as ControlAirTableHandler;
+use BristolSU\AirTable\Events\RowCreated;
+use BristolSU\AirTable\Listeners\StoreRowData;
 use BristolSU\AirTable\Progress\AirtableHandler as ProgressAirTableHandler;
 use BristolSU\ControlDB\Export\Exporter;
 use BristolSU\ControlDB\Export\ExportManager;
 use BristolSU\Support\Progress\ProgressExport;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AirTableServiceProvider extends ServiceProvider
 {
-
     public function boot()
     {
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
         ProgressExport::extend('airtable', function($container, $config) {
             $missingKey = null;
             if(!array_key_exists('apiKey', $config)) {
@@ -54,6 +58,10 @@ class AirTableServiceProvider extends ServiceProvider
 
             return new ControlAirTableHandler($config);
         });
+
+        Event::listen(RowCreated::class, StoreRowData::class);
     }
+
+
     
 }

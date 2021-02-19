@@ -2,7 +2,7 @@
 
 namespace BristolSU\AirTable;
 
-use GuzzleHttp\Psr7\Response;
+use BristolSU\AirTable\Events\RowCreated;
 use Psr\Http\Message\ResponseInterface;
 
 class AirTable
@@ -162,9 +162,11 @@ class AirTable
         }
 
         $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
-            $this->request('post', [
+            $request = $this->request('post', [
                 'records' => $rowsToCreate, 'typecast' => $typecast
             ]);
+
+            RowCreated::dispatch($request->getBody()->getContents());
         });
     }
 
