@@ -5,6 +5,7 @@ namespace BristolSU\AirTable\Progress;
 
 use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\AirTable\Jobs\UpdateRecords;
+use BristolSU\AirTable\Models\AirtableId;
 use BristolSU\Support\ActivityInstance\Contracts\ActivityInstanceRepository;
 use BristolSU\Support\ModuleInstance\Contracts\ModuleInstanceRepository;
 use BristolSU\Support\ModuleInstance\ModuleInstance;
@@ -49,7 +50,7 @@ class AirtableHandler implements Handler
                 return $carry;
             });
 
-        $data = [
+        return [
             'Participant Name' => $activityInstance->participantName(),
             'Mandatory Modules' => $this->filterModules(function (ModuleInstanceProgress $moduleInstanceProgress) {
                 return $moduleInstanceProgress->isMandatory();
@@ -81,13 +82,6 @@ class AirtableHandler implements Handler
             'Participant ID' => $activityInstance->resource_id,
             'Snapshot Date' => $progress->getTimestamp()->format(\DateTime::ATOM)
         ];
-
-        if($includeId) {
-
-            $data['id'] = $activityInstance->id();
-        }
-
-        return $data;
     }
 
     /**
@@ -95,22 +89,21 @@ class AirtableHandler implements Handler
      */
     public function saveMany(array $progresses): void
     {
-        $data = [];
-        $this->log(sprintf('Parsing %d progresses', count($progresses)));
-        foreach ($progresses as $progress) {
-            $data[] = $this->parseProgress($progress);
-        }
-        $this->updateRecords($data);
-    }
+        $airTableID = new AirtableId();
 
-    public function updateMany(array $progresses): void
-    {
-        $data = [];
+        $create = [];
+        $update = [];
         $this->log(sprintf('Parsing %d progresses', count($progresses)));
         foreach ($progresses as $progress) {
-            $data[] = $this->parseProgress($progress, true);
+            if($airTableID->hasActivityInstance($progress->getActivityInstanceId())) {
+                $update[] = ['id' => $airTableID->getRowId($progress->getActivityInstanceId()), 'fields' => $this->parseProgress($progress)];
+            } else {
+                $create[] = $this->parseProgress($progress);
+            }
         }
-        $this->updateRecords($data);
+
+        if($create) { $this->createRecords($create); }
+        if($update) { $this->updateRecords($update); }
     }
 
     public function save(Progress $progress): void

@@ -179,15 +179,7 @@ class AirTable
      */
     public function updateRows(array $rows, bool $typecast = true)
     {
-        $data = [];
-        foreach($rows as $row) {
-            // Create a temp instance of ID and remove from fields:
-            $id = $row['id'];
-            unset($row['id']);
-            $data[] = ['id' => $id, 'fields' => $row];
-        }
-
-        $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
+        $this->chunkAndThrottle($rows, function($rowsToCreate) use ($typecast) {
             $this->request('patch', [
                 'records' => $rowsToCreate, 'typecast' => $typecast
             ]);
