@@ -2,8 +2,11 @@
 
 namespace BristolSU\AirTable\Control;
 
+use BristolSU\AirTable\AirtableIdManager;
+use BristolSU\AirTable\Jobs\CreateControlRecords;
 use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\AirTable\Jobs\FlushRows;
+use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\ControlDB\Export\FormattedItem;
 use BristolSU\ControlDB\Export\Handler\Handler;
 use Carbon\Carbon;
@@ -21,27 +24,37 @@ class AirtableHandler extends Handler
      */
     protected function save(array $items)
     {
-        $creating = [];
-        
+        $toCreate = [];
+        $toUpdate = [];
+
+        /** @var AirtableIdManager $airtableIdManager */
+        $airtableIdManager = app(AirtableIdManager::class);
+        $itemType = 'control_' . $this->config('tableName');
+
         foreach($items as $item) {
-            $creating[] = $item->toArray();
+            $itemId = $item->getItem($this->config('uniqueIdRowName'));
+            if($airtableIdManager->hasModel($itemId, $itemType)) {
+                $toUpdate[] = [
+                    'id' => $airtableIdManager->getAirtableId($itemId, $itemType),
+                    'fields' => $item->toArray()
+                ];
+            } else {
+                $toCreate[] = ['fields' => $item->toArray()];
+            }
         }
 
-        $this->log('Flushing rows');
-        
-        dispatch_now(
-            (new FlushRows(
+        foreach(array_chunk($toCreate, 10) as $data) {
+            dispatch((new CreateControlRecords(
+                $data,
                 $this->config('apiKey'),
                 $this->config('baseId'),
-                $this->config('tableName')
-            ))->withDebug($this->config('debug', false))
-        );
+                $this->config('tableName'),
+                $this->config('uniqueIdRowName')
+            ))->withDebug($this->config('debug', false)));
+        }
 
-        $this->log('Flushed rows. Creating records');
-
-
-        foreach(array_chunk($creating, 10) as $data) {
-            dispatch((new CreateRecords(
+        foreach(array_chunk($toUpdate, 10) as $data) {
+            dispatch((new UpdateRecords(
                 $data,
                 $this->config('apiKey'),
                 $this->config('baseId'),

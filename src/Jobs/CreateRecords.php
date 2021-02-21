@@ -8,17 +8,18 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\ResponseInterface;
 use Spatie\RateLimitedMiddleware\RateLimited;
 
-class CreateRecords implements ShouldQueue
+abstract class CreateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-    private array $data;
-    private string $apiKey;
-    private string $baseId;
-    private string $tableName;
-    private bool $debug = false;
+    protected array $data;
+    protected string $apiKey;
+    protected string $baseId;
+    protected string $tableName;
+    protected bool $debug = false;
 
     public function __construct(array $data, string $apiKey, string $baseId, string $tableName)
     {
@@ -45,9 +46,11 @@ class CreateRecords implements ShouldQueue
         $airTable->setBaseId($this->baseId);
         $airTable->setTableName($this->tableName);
         $this->log('Creating Rows');
-        $airTable->createRows($this->data, true);
+        $airTable->createRows($this->data, true, [$this, 'withResponse']);
         $this->log('Created Rows');
     }
+
+    abstract public function withResponse(ResponseInterface $response);
 
     public function withDebug(bool $debug)
     {
@@ -60,7 +63,7 @@ class CreateRecords implements ShouldQueue
         return now()->addHours(5);
     }
 
-    private function log(string $string)
+    protected function log(string $string)
     {
         if($this->debug) {
             Log::debug($string);

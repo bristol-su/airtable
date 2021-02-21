@@ -145,37 +145,47 @@ class AirTable
     /**
      * Create Rows
      *
-     * @param array $rows An array of arrays with the key as the field name and the value as the field value. E.g.
+     * @param array $rows An array of fields of data.
      * [
-     *      ['Field1' => 'Val1', 'Field2' => 'Val2'],
-     *      ['Field1' => 'Val3', 'Field2' => 'Val3']
+     *      ['fields' => [
+     *          'Field1' => 'Val1', 'Field2' => 'Val2'
+     *      ]],
+     *      ['fields' => [
+     *          'Field1' => 'Val3', 'Field2' => 'Val4'
+     *      ]]
      * ]
      * @param bool $typecast
-     * 
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param \Closure|null $withResponse
      */
-    public function createRows(array $rows, bool $typecast = true)
+    public function createRows(array $rows, bool $typecast = true, \Closure $withResponse = null)
     {
-        $data = [];
-        foreach($rows as $row) {
-            $data[] = ['fields' => $row];
-        }
-
-        $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
-            $request = $this->request('post', [
+        $this->chunkAndThrottle($rows, function($rowsToCreate) use ($typecast, $withResponse) {
+            $response = $this->request('post', [
                 'records' => $rowsToCreate, 'typecast' => $typecast
             ]);
 
-            RowCreated::dispatch($request->getBody()->getContents());
+            if($withResponse !== null) {
+                $withResponse($response);
+            }
         });
     }
 
 
     /**
-     * Update Rows.
+     * Update Rows
      *
-     * @param array $rows An array of data (see createRows for example)
+     * @param array $rows An array of fields of data and the ID of the airtable row
+     * [
+     *      ['id' => 'rec123', 'fields' => [
+     *          'Field1' => 'Val1', 'Field2' => 'Val2'
+     *      ]],
+     *      ['id' => 'rec456', 'fields' => [
+     *          'Field1' => 'Val3', 'Field2' => 'Val4'
+     *      ]]
+     * ]
      * @param bool $typecast
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function updateRows(array $rows, bool $typecast = true)
     {

@@ -8,15 +8,24 @@ class AirtableId extends Model
 {
     protected $table = 'airtable_ids';
 
-    protected $fillable = ['airtable_id', 'activity_instance_id'];
+    protected $fillable = [
+        'airtable_id',
+        'model_type',
+        'model_id',
+    ];
 
-    function hasActivityInstance(int $activityInstanceId): bool
+    public function airtableId(): string
     {
-        return $this->where('activity_instance_id', '=', $activityInstanceId)->count() > 0;
+        return (string) $this->airtable_id;
     }
 
-    function getRowId(int $activityInstanceId): string
+    public function modelId(): int
     {
-        return $this->where('activity_instance_id', '=', $activityInstanceId)->pluck('airtable_id')->first();
+        return (int) $this->model_id;
+    }
+
+    public function modelType(): string
+    {
+        return (string) $this->model_type;
     }
 }

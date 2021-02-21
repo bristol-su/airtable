@@ -9,10 +9,20 @@ class RowCreated
 {
     use Dispatchable, SerializesModels;
 
-    public $row;
+    public int $modelId;
 
-    public function __construct($row)
+    public string $modelType;
+
+    public string $airtableRowId;
+
+    public array $fields;
+
+    public function __construct(int $modelId, string $modelType, string $airtableRowId, array $fields)
     {
-        $this->row = $row;
+        $this->airtableRowId = $airtableRowId;
+        $this->fields = $fields;
+        $this->modelId = $modelId;
+        $this->modelType = $modelType;
     }
+
 }

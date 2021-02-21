@@ -4,7 +4,7 @@ namespace BristolSU\AirTable;
 
 use BristolSU\AirTable\Control\AirtableHandler as ControlAirTableHandler;
 use BristolSU\AirTable\Events\RowCreated;
-use BristolSU\AirTable\Listeners\StoreRowData;
+use BristolSU\AirTable\Listeners\StoreNewRowData;
 use BristolSU\AirTable\Progress\AirtableHandler as ProgressAirTableHandler;
 use BristolSU\ControlDB\Export\Exporter;
 use BristolSU\ControlDB\Export\ExportManager;
@@ -59,7 +59,7 @@ class AirTableServiceProvider extends ServiceProvider
             return new ControlAirTableHandler($config);
         });
 
-        Event::listen(RowCreated::class, StoreRowData::class);
+        Event::listen(RowCreated::class, StoreNewRowData::class);
     }
 
 
