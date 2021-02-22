@@ -3,6 +3,7 @@
 
 namespace BristolSU\AirTable\Progress;
 
+use BristolSU\AirTable\AirtableIdManager;
 use BristolSU\AirTable\Jobs\CreateProgressRecords;
 use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\AirTable\Jobs\UpdateRecords;
@@ -93,11 +94,14 @@ class AirtableHandler implements Handler
         $toCreate = [];
         $toUpdate = [];
 
+        /** @var AirtableIdManager $airtableIdManager */
+        $airtableIdManager = app(AirtableIdManager::class);
+
         foreach ($progresses as $progress) {
             $parsedProgress = $this->parseProgress($progress);
-            if (AirtableId::hasActivityInstance($progress->getActivityInstanceId())) {
+            if ($airtableIdManager->hasModel($progress->getActivityInstanceId(), 'progress')) {
                 $toUpdate[] = [
-                    'id' => AirtableId::getRowId($progress->getActivityInstanceId()),
+                    'id' => $airtableIdManager->getAirtableId($progress->getActivityInstanceId(), 'progress'),
                     'fields' => $parsedProgress
                 ];
             } else {

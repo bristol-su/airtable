@@ -39,18 +39,18 @@ abstract class CreateRecords implements ShouldQueue
 
         return [$rateLimitedMiddleware];
     }
-    
+
     public function handle(AirTable $airTable)
     {
         $airTable->setApiKey($this->apiKey);
         $airTable->setBaseId($this->baseId);
         $airTable->setTableName($this->tableName);
         $this->log('Creating Rows');
-        $airTable->createRows($this->data, true, [$this, 'withResponse']);
+        $airTable->createRows($this->data, true, fn(array $data) => $this->withResponse($data));
         $this->log('Created Rows');
     }
 
-    abstract public function withResponse(ResponseInterface $response);
+    abstract public function withResponse(array $response);
 
     public function withDebug(bool $debug)
     {

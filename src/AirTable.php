@@ -10,8 +10,8 @@ class AirTable
 
     /**
      * The ID of the Progress base to use
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private string $baseId;
 
@@ -24,18 +24,18 @@ class AirTable
 
     /**
      * API key to use for authentication
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private string $apiKey;
 
     /**
-     * @var \GuzzleHttp\Client 
+     * @var \GuzzleHttp\Client
      */
     private \GuzzleHttp\Client $client;
 
     public static $rateLimitCooldown = 30;
-    
+
     public function __construct(\GuzzleHttp\Client $client)
     {
         $this->client = $client;
@@ -92,9 +92,9 @@ class AirTable
     /**
      * @param string $method
      * @param array|null $data
-     * 
+     *
      * @return ResponseInterface
-     * 
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function request(string $method = 'get', array $data = null): ResponseInterface
@@ -116,7 +116,7 @@ class AirTable
             $options
         );
     }
-    
+
     protected function execute($dataChunk, \Closure $execution)
     {
         try {
@@ -165,7 +165,10 @@ class AirTable
             ]);
 
             if($withResponse !== null) {
-                $withResponse($response);
+                $data = json_decode($response->getBody()->getContents(), true);
+                foreach($data['records'] as $record) {
+                    $withResponse($record);
+                }
             }
         });
     }
@@ -223,13 +226,13 @@ class AirTable
                 ]);
             });
             $responseData = json_decode($response->getBody()->getContents(), true);
-            
+
             try {
                 $newRecords = $responseData['records'];
             } catch (\Exception $e) {
                 $newRecords = [];
             }
-            
+
             $records = array_merge($records, $newRecords);
             if(array_key_exists('offset', $responseData)) {
                 $offset = $responseData['offset'];
@@ -239,7 +242,7 @@ class AirTable
         } while($offset !== null);
         return $records;
     }
-    
+
     public function getIdsFromTable(): array
     {
          $ids = [];

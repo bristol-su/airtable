@@ -18,7 +18,7 @@ class AirtableHandler extends Handler
 
     /**
      * Save each item to AirTable
-     * 
+     *
      * @param FormattedItem[] $items
      * @return mixed|void
      */
@@ -33,6 +33,9 @@ class AirtableHandler extends Handler
 
         foreach($items as $item) {
             $itemId = $item->getItem($this->config('uniqueIdRowName'));
+            if($itemId === null) {
+                throw new \Exception('Please add the `uniqueIdRowName` configuration to the airtable driver');
+            }
             if($airtableIdManager->hasModel($itemId, $itemType)) {
                 $toUpdate[] = [
                     'id' => $airtableIdManager->getAirtableId($itemId, $itemType),
