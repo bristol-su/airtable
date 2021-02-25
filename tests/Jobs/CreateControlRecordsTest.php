@@ -31,7 +31,7 @@ class CreateControlRecordsTest extends TestCase
 
         Event::assertdispatched(RowCreated::class, function(RowCreated $event) {
             $this->assertEquals(11, $event->modelId);
-            $this->assertEquals('control_myTableName1', $event->modelType);
+            $this->assertEquals('control_myTableName1_myBaseId1', $event->modelType);
             $this->assertEquals('airtable1', $event->airtableRowId);
             $this->assertEquals([
                 'My Row ID' => 11,

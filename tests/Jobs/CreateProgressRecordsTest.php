@@ -30,7 +30,7 @@ class CreateProgressRecordsTest extends TestCase
 
         Event::assertdispatched(RowCreated::class, function(RowCreated $event) {
             $this->assertEquals(11, $event->modelId);
-            $this->assertEquals('progress_myTableName1', $event->modelType);
+            $this->assertEquals('progress_myTableName1_myBaseId1', $event->modelType);
             $this->assertEquals('airtable1', $event->airtableRowId);
             $this->assertEquals([
                 'Activity Instance ID' => 11,

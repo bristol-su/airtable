@@ -14,7 +14,7 @@ class CreateProgressRecords extends CreateRecords
             array_key_exists('Activity Instance ID', $response['fields'])) {
             RowCreated::dispatch(
                 (int) $response['fields']['Activity Instance ID'],
-                'progress_' . $this->tableName,
+                'progress_' . $this->tableName . '_' . $this->baseId,
                 $response['id'],
                 $response['fields']
             );

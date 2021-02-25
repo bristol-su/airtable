@@ -27,7 +27,7 @@ class AirtableHandler extends Handler
 
         /** @var AirtableIdManager $airtableIdManager */
         $airtableIdManager = app(AirtableIdManager::class);
-        $itemType = 'control_' . $this->config('tableName');
+        $itemType = 'control_' . $this->config('tableName') . '_' . $this->config('baseId');
 
         foreach($items as $item) {
             $itemId = $item->getItem($this->config('uniqueIdRowName'));

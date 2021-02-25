@@ -80,12 +80,12 @@ class AirtableHandlerTest extends TestCase
         ]);
 
         $airtableIdManager = $this->prophesize(AirtableIdManager::class);
-        $airtableIdManager->hasModel(1, 'control_myTableName')->willReturn(true);
-        $airtableIdManager->hasModel(2, 'control_myTableName')->willReturn(true);
-        $airtableIdManager->hasModel(3, 'control_myTableName')->willReturn(true);
-        $airtableIdManager->getAirtableId(1, 'control_myTableName')->willReturn('airtable1');
-        $airtableIdManager->getAirtableId(2, 'control_myTableName')->willReturn('airtable2');
-        $airtableIdManager->getAirtableId(3, 'control_myTableName')->willReturn('airtable3');
+        $airtableIdManager->hasModel(1, 'control_myTableName_myBaseId')->willReturn(true);
+        $airtableIdManager->hasModel(2, 'control_myTableName_myBaseId')->willReturn(true);
+        $airtableIdManager->hasModel(3, 'control_myTableName_myBaseId')->willReturn(true);
+        $airtableIdManager->getAirtableId(1, 'control_myTableName_myBaseId')->willReturn('airtable1');
+        $airtableIdManager->getAirtableId(2, 'control_myTableName_myBaseId')->willReturn('airtable2');
+        $airtableIdManager->getAirtableId(3, 'control_myTableName_myBaseId')->willReturn('airtable3');
         $this->instance(AirtableIdManager::class, $airtableIdManager->reveal());
 
         $handler = new AirtableHandler([
@@ -135,12 +135,12 @@ class AirtableHandlerTest extends TestCase
         ]);
 
         $airtableIdManager = $this->prophesize(AirtableIdManager::class);
-        $airtableIdManager->hasModel(1, 'control_myTableName')->willReturn(true);
-        $airtableIdManager->hasModel(2, 'control_myTableName')->willReturn(false);
-        $airtableIdManager->hasModel(3, 'control_myTableName')->willReturn(true);
-        $airtableIdManager->getAirtableId(1, 'control_myTableName')->willReturn('airtable1');
-        $airtableIdManager->getAirtableId(2, 'control_myTableName')->shouldNotBeCalled();
-        $airtableIdManager->getAirtableId(3, 'control_myTableName')->willReturn('airtable3');
+        $airtableIdManager->hasModel(1, 'control_myTableName_myBaseId')->willReturn(true);
+        $airtableIdManager->hasModel(2, 'control_myTableName_myBaseId')->willReturn(false);
+        $airtableIdManager->hasModel(3, 'control_myTableName_myBaseId')->willReturn(true);
+        $airtableIdManager->getAirtableId(1, 'control_myTableName_myBaseId')->willReturn('airtable1');
+        $airtableIdManager->getAirtableId(2, 'control_myTableName_myBaseId')->shouldNotBeCalled();
+        $airtableIdManager->getAirtableId(3, 'control_myTableName_myBaseId')->willReturn('airtable3');
         $this->instance(AirtableIdManager::class, $airtableIdManager->reveal());
 
         $handler = new AirtableHandler([
@@ -196,11 +196,11 @@ class AirtableHandlerTest extends TestCase
 
         $airtableIdManager = $this->prophesize(AirtableIdManager::class);
         foreach($updateItems as $item) {
-            $airtableIdManager->hasModel($item->getItem('My Row ID'), 'control_myTableName')->willReturn(true);
-            $airtableIdManager->getAirtableId($item->getItem('My Row ID'), 'control_myTableName')->willReturn('airtable' . $item->getItem('My Row ID'));
+            $airtableIdManager->hasModel($item->getItem('My Row ID'), 'control_myTableName_myBaseId')->willReturn(true);
+            $airtableIdManager->getAirtableId($item->getItem('My Row ID'), 'control_myTableName_myBaseId')->willReturn('airtable' . $item->getItem('My Row ID'));
         }
         foreach($createItems as $item) {
-            $airtableIdManager->hasModel($item->getItem('My Row ID'), 'control_myTableName')->willReturn(false);
+            $airtableIdManager->hasModel($item->getItem('My Row ID'), 'control_myTableName_myBaseId')->willReturn(false);
         }
         $this->instance(AirtableIdManager::class, $airtableIdManager->reveal());
 

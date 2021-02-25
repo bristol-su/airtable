@@ -23,7 +23,7 @@ class CreateControlRecords extends CreateRecords
             array_key_exists($this->uniqueIdRowName, $response['fields'])) {
             RowCreated::dispatch(
                 (int) $response['fields'][$this->uniqueIdRowName],
-                'control_' . $this->tableName,
+                'control_' . $this->tableName . '_' . $this->baseId,
                 $response['id'],
                 $response['fields']
             );
