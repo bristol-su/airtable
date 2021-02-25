@@ -6,6 +6,7 @@ use BristolSU\AirTable\AirTable;
 use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\Tests\AirTable\TestCase;
 use GuzzleHttp\Client;
+use Prophecy\Argument;
 
 class CreateRecordsTest extends TestCase
 {
@@ -19,14 +20,15 @@ class CreateRecordsTest extends TestCase
         $airtable->createRows([
             ['Field1' => 'Value1'],
             ['Field1' => 'Value2']
-        ], true)->shouldBeCalled();
+        ], true, Argument::type('Closure'))->shouldBeCalled();
         $data = [
             ['Field1' => 'Value1'],
             ['Field1' => 'Value2'],
         ];
         $job = new CreateRecords($data, 'myApiKey1', 'myBaseId1', 'myTableName1');
-        
+
         $job->handle($airtable->reveal());
+
     }
-    
+
 }

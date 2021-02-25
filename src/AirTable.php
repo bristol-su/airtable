@@ -2,7 +2,7 @@
 
 namespace BristolSU\AirTable;
 
-use GuzzleHttp\Psr7\Response;
+use BristolSU\AirTable\Events\RowCreated;
 use Psr\Http\Message\ResponseInterface;
 
 class AirTable
@@ -10,8 +10,8 @@ class AirTable
 
     /**
      * The ID of the Progress base to use
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private string $baseId;
 
@@ -24,18 +24,18 @@ class AirTable
 
     /**
      * API key to use for authentication
-     * 
-     * @var string 
+     *
+     * @var string
      */
     private string $apiKey;
 
     /**
-     * @var \GuzzleHttp\Client 
+     * @var \GuzzleHttp\Client
      */
     private \GuzzleHttp\Client $client;
 
     public static $rateLimitCooldown = 30;
-    
+
     public function __construct(\GuzzleHttp\Client $client)
     {
         $this->client = $client;
@@ -92,9 +92,9 @@ class AirTable
     /**
      * @param string $method
      * @param array|null $data
-     * 
+     *
      * @return ResponseInterface
-     * 
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function request(string $method = 'get', array $data = null): ResponseInterface
@@ -111,12 +111,13 @@ class AirTable
                 $options['json'] = $data;
             }
         }
+
         return $this->client->request($method,
             sprintf('https://api.airtable.com/v0/%s/%s', $this->baseId, $this->tableName),
             $options
         );
     }
-    
+
     protected function execute($dataChunk, \Closure $execution)
     {
         try {
@@ -145,24 +146,55 @@ class AirTable
     /**
      * Create Rows
      *
-     * @param array $rows An array of arrays with the key as the field name and the value as the field value. E.g.
+     * @param array $rows An array of fields of data.
      * [
-     *      ['Field1' => 'Val1', 'Field2' => 'Val2'],
-     *      ['Field1' => 'Val3', 'Field2' => 'Val3']
+     *      ['fields' => [
+     *          'Field1' => 'Val1', 'Field2' => 'Val2'
+     *      ]],
+     *      ['fields' => [
+     *          'Field1' => 'Val3', 'Field2' => 'Val4'
+     *      ]]
      * ]
      * @param bool $typecast
-     * 
+     * @param \Closure|null $withResponse
+     */
+    public function createRows(array $rows, bool $typecast = true, \Closure $withResponse = null)
+    {
+        $this->chunkAndThrottle($rows, function($rowsToCreate) use ($typecast, $withResponse) {
+            $response = $this->request('post', [
+                'records' => $rowsToCreate, 'typecast' => $typecast
+            ]);
+
+            if($withResponse !== null) {
+                $data = json_decode($response->getBody()->getContents(), true);
+                foreach($data['records'] as $record) {
+                    $withResponse($record);
+                }
+            }
+        });
+    }
+
+
+    /**
+     * Update Rows
+     *
+     * @param array $rows An array of fields of data and the ID of the airtable row
+     * [
+     *      ['id' => 'rec123', 'fields' => [
+     *          'Field1' => 'Val1', 'Field2' => 'Val2'
+     *      ]],
+     *      ['id' => 'rec456', 'fields' => [
+     *          'Field1' => 'Val3', 'Field2' => 'Val4'
+     *      ]]
+     * ]
+     * @param bool $typecast
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createRows(array $rows, bool $typecast = true)
+    public function updateRows(array $rows, bool $typecast = true)
     {
-        $data = [];
-        foreach($rows as $row) {
-            $data[] = ['fields' => $row];
-        }
-        
-        $this->chunkAndThrottle($data, function($rowsToCreate) use ($typecast) {
-            $this->request('post', [
+        $this->chunkAndThrottle($rows, function($rowsToCreate) use ($typecast) {
+            $this->request('patch', [
                 'records' => $rowsToCreate, 'typecast' => $typecast
             ]);
         });
@@ -195,13 +227,13 @@ class AirTable
                 ]);
             });
             $responseData = json_decode($response->getBody()->getContents(), true);
-            
+
             try {
                 $newRecords = $responseData['records'];
             } catch (\Exception $e) {
                 $newRecords = [];
             }
-            
+
             $records = array_merge($records, $newRecords);
             if(array_key_exists('offset', $responseData)) {
                 $offset = $responseData['offset'];
@@ -211,7 +243,7 @@ class AirTable
         } while($offset !== null);
         return $records;
     }
-    
+
     public function getIdsFromTable(): array
     {
          $ids = [];
@@ -220,12 +252,4 @@ class AirTable
         }
         return $ids;
     }
-
-    public function flushTable()
-    {
-        $this->deleteRows(
-            $this->getIdsFromTable()
-        );
-    }
-    
 }
