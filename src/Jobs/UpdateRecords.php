@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BristolSU\AirTable\Jobs;
-
 
 use BristolSU\AirTable\AirTable;
 use Illuminate\Bus\Queueable;
@@ -12,23 +10,22 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Spatie\RateLimitedMiddleware\RateLimited;
 
-class DeleteRows implements ShouldQueue
+class UpdateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-    private string $apiKey;
-    private string $baseId;
-    private string $tableName;
-    private array $ids;
-    private bool $debug = false;
+    public array $data;
+    public string $apiKey;
+    public string $baseId;
+    public string $tableName;
+    public bool $debug = false;
 
-    public function __construct(array $ids
-        , string $apiKey, string $baseId, string $tableName)
+    public function __construct(array $data, string $apiKey, string $baseId, string $tableName)
     {
+        $this->data = $data;
         $this->apiKey = $apiKey;
         $this->baseId = $baseId;
         $this->tableName = $tableName;
-        $this->ids = $ids;
     }
 
     public function middleware()
@@ -47,9 +44,9 @@ class DeleteRows implements ShouldQueue
         $airTable->setApiKey($this->apiKey);
         $airTable->setBaseId($this->baseId);
         $airTable->setTableName($this->tableName);
-        $this->log('Deleting Rows');
-        $airTable->deleteRows($this->ids);
-        $this->log('Deleted Rows');
+        $this->log('Updating Rows');
+        $airTable->updateRows($this->data, true);
+        $this->log('Updated Rows');
     }
 
     public function withDebug(bool $debug)
@@ -57,16 +54,17 @@ class DeleteRows implements ShouldQueue
         $this->debug = $debug;
         return $this;
     }
-    
+
     public function retryUntil() :  \DateTime
     {
         return now()->addHours(5);
     }
 
-    private function log(string $string)
+    protected function log(string $string)
     {
         if($this->debug) {
             Log::debug($string);
         }
     }
+
 }

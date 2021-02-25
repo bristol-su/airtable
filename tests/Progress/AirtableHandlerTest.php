@@ -2,13 +2,13 @@
 
 namespace BristolSU\AirTable\Tests\Progress;
 
-use BristolSU\AirTable\Jobs\FlushRows;
+use BristolSU\AirTable\Jobs\CreateProgressRecords;
+use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\ControlDB\Models\DataGroup;
 use BristolSU\Support\Activity\Activity;
 use BristolSU\Support\ActivityInstance\ActivityInstance;
 use BristolSU\Support\ModuleInstance\ModuleInstance;
 use BristolSU\AirTable\Progress\AirtableHandler;
-use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\Support\Progress\ModuleInstanceProgress;
 use BristolSU\Support\Progress\Progress;
 use BristolSU\Tests\AirTable\TestCase;
@@ -21,7 +21,7 @@ class AirtableHandlerTest extends TestCase
 
     /** @test */
     public function it_passes_the_apiKey_tableName_and_baseId_to_each_job(){
-        Bus::fake([FlushRows::class, CreateRecords::class]);
+        Bus::fake([CreateProgressRecords::class, UpdateRecords::class]);
 
         $activity = factory(Activity::class)->create();
         $activityInstance = factory(ActivityInstance::class)->create([
@@ -32,7 +32,7 @@ class AirtableHandlerTest extends TestCase
         $handler = new AirtableHandler('myBaseId', 'myTableName', 'myApiKey');
         $handler->save($progress);
 
-        $createRecordsReflection = new \ReflectionClass(CreateRecords::class);
+        $createRecordsReflection = new \ReflectionClass(CreateProgressRecords::class);
         $apiKeyProperty = $createRecordsReflection->getProperty('apiKey');
         $apiKeyProperty->setAccessible(true);
         $tableNameProperty = $createRecordsReflection->getProperty('tableName');
@@ -40,24 +40,22 @@ class AirtableHandlerTest extends TestCase
         $baseIdProperty = $createRecordsReflection->getProperty('baseId');
         $baseIdProperty->setAccessible(true);
 
-        Bus::assertDispatched(CreateRecords::class, function(CreateRecords $createRecordsJob) use ($apiKeyProperty, $tableNameProperty, $baseIdProperty) {
+        Bus::assertDispatched(CreateProgressRecords::class, function(CreateProgressRecords $createRecordsJob) use ($apiKeyProperty, $tableNameProperty, $baseIdProperty) {
             return $apiKeyProperty->getValue($createRecordsJob) === 'myApiKey'
                 && $tableNameProperty->getValue($createRecordsJob) === 'myTableName'
                 && $baseIdProperty->getValue($createRecordsJob) === 'myBaseId';
         });
-        
-        Bus::assertDispatched(FlushRows::class);
 
     }
 
     /** @test */
     public function it_correctly_parses_a_single_progress(){
-        Bus::fake([FlushRows::class, CreateRecords::class]);
-        
+        Bus::fake([CreateProgressRecords::class, UpdateRecords::class]);
+
         $now = Carbon::now();
         $dataGroup = factory(DataGroup::class)->create(['name' => 'Test Group 1']);
         $group = $this->newGroup(['data_provider_id' => $dataGroup->id()]);
-        
+
         $activity = factory(Activity::class)->create();
         $activityInstance = factory(ActivityInstance::class)->create([
             'activity_id' => $activity->id,
@@ -68,7 +66,7 @@ class AirtableHandlerTest extends TestCase
         $module2 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 2']);
         $module3 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 3']);
         $module4 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 4']);
-        
+
         $progress = Progress::create($activity->id, $activityInstance->id, $now, false, 55);
         $moduleProgress1 = ModuleInstanceProgress::create($module1->id, true, true, 10, true, false);
         $moduleProgress2 = ModuleInstanceProgress::create($module2->id, true, false, 10, false, false);
@@ -79,42 +77,43 @@ class AirtableHandlerTest extends TestCase
         $progress->pushModule($moduleProgress2);
         $progress->pushModule($moduleProgress3);
         $progress->pushModule($moduleProgress4);
-        
+
         $handler = new AirtableHandler('myBaseId', 'myTableName', 'myApiKey');
         $handler->save($progress);
-        
-        $createRecordsReflection = new \ReflectionClass(CreateRecords::class);
+
+        $createRecordsReflection = new \ReflectionClass(CreateProgressRecords::class);
         $dataProperty = $createRecordsReflection->getProperty('data');
         $dataProperty->setAccessible(true);
 
-        Bus::assertDispatched(CreateRecords::class, function(CreateRecords $job) use ($dataProperty, $activityInstance, $activity, $group, $now) {
+        Bus::assertDispatched(CreateProgressRecords::class, function(CreateProgressRecords $job) use ($dataProperty, $activityInstance, $activity, $group, $now) {
             $data = $dataProperty->getValue($job);
             Assert::assertArrayHasKey(0, $data);
             Assert::assertEquals([
-                'Participant Name' => 'Test Group 1',
-                'Mandatory Modules' => ['Test Module 1', 'Test Module 2'],
-                'Optional Modules' => ['Test Module 3', 'Test Module 4'],
-                'Complete Modules' => ['Test Module 1', 'Test Module 4'],
-                'Incomplete Modules' => ['Test Module 2', 'Test Module 3'],
-                'Active Modules' => ['Test Module 1'],
-                'Inactive Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
-                'Hidden Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
-                'Visible Modules' => ['Test Module 4'],
-                '% Complete' => 55,
-                'Activity Instance ID' => $activityInstance->id,
-                'Activity ID' => $activity->id,
-                'Participant ID' => $group->id(),
-                'Snapshot Date' => $now->format(\DateTime::ATOM)
+                'fields' => [
+                    'Participant Name' => 'Test Group 1',
+                    'Mandatory Modules' => ['Test Module 1', 'Test Module 2'],
+                    'Optional Modules' => ['Test Module 3', 'Test Module 4'],
+                    'Complete Modules' => ['Test Module 1', 'Test Module 4'],
+                    'Incomplete Modules' => ['Test Module 2', 'Test Module 3'],
+                    'Active Modules' => ['Test Module 1'],
+                    'Inactive Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
+                    'Hidden Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
+                    'Visible Modules' => ['Test Module 4'],
+                    '% Complete' => 55,
+                    'Activity Instance ID' => $activityInstance->id,
+                    'Activity ID' => $activity->id,
+                    'Participant ID' => $group->id(),
+                    'Snapshot Date' => $now->format(\DateTime::ATOM)
+                ]
             ], $data[0]);
             return true;
         });
-        Bus::assertDispatched(FlushRows::class);
-        
+
     }
 
     /** @test */
     public function it_correctly_parses_two_progresses(){
-        Bus::fake([FlushRows::class, CreateRecords::class]);
+        Bus::fake([CreateProgressRecords::class, UpdateRecords::class]);
 
         $now = Carbon::now();
         $dataGroup1 = factory(DataGroup::class)->create(['name' => 'Test Group 1']);
@@ -133,7 +132,7 @@ class AirtableHandlerTest extends TestCase
             'resource_type' => 'group',
             'resource_id' => $group2->id()
         ]);
-        
+
         $module1 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 1']);
         $module2 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 2']);
         $module3 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 3']);
@@ -151,7 +150,7 @@ class AirtableHandlerTest extends TestCase
         $moduleProgress2_3 = ModuleInstanceProgress::create($module3->id, true, true, 10, true, true);
         $moduleProgress2_4 = ModuleInstanceProgress::create($module4->id, true, false, 10, true, false);
 
-        
+
         $progress1->pushModule($moduleProgress1_1);
         $progress1->pushModule($moduleProgress1_2);
         $progress1->pushModule($moduleProgress1_3);
@@ -164,51 +163,53 @@ class AirtableHandlerTest extends TestCase
         $handler = new AirtableHandler('myBaseId', 'myTableName', 'myApiKey');
         $handler->saveMany([$progress1, $progress2]);
 
-        $createRecordsReflection = new \ReflectionClass(CreateRecords::class);
+        $createRecordsReflection = new \ReflectionClass(CreateProgressRecords::class);
         $dataProperty = $createRecordsReflection->getProperty('data');
         $dataProperty->setAccessible(true);
 
-        Bus::assertDispatched(CreateRecords::class, function(CreateRecords $job) use ($dataProperty, $activityInstance1, $activityInstance2, $activity, $group1, $group2, $now) {
+        Bus::assertDispatched(CreateProgressRecords::class, function(CreateProgressRecords $job) use ($dataProperty, $activityInstance1, $activityInstance2, $activity, $group1, $group2, $now) {
             $data = $dataProperty->getValue($job);
             Assert::assertArrayHasKey(0, $data);
             Assert::assertEquals([
-                'Participant Name' => 'Test Group 1',
-                'Mandatory Modules' => ['Test Module 1', 'Test Module 2'],
-                'Optional Modules' => ['Test Module 3', 'Test Module 4'],
-                'Complete Modules' => ['Test Module 1', 'Test Module 4'],
-                'Incomplete Modules' => ['Test Module 2', 'Test Module 3'],
-                'Active Modules' => ['Test Module 1'],
-                'Inactive Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
-                'Hidden Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
-                'Visible Modules' => ['Test Module 4'],
-                '% Complete' => 55,
-                'Activity Instance ID' => $activityInstance1->id,
-                'Activity ID' => $activity->id,
-                'Participant ID' => $group1->id(),
-                'Snapshot Date' => $now->format(\DateTime::ATOM)
+                'fields' => [
+                    'Participant Name' => 'Test Group 1',
+                    'Mandatory Modules' => ['Test Module 1', 'Test Module 2'],
+                    'Optional Modules' => ['Test Module 3', 'Test Module 4'],
+                    'Complete Modules' => ['Test Module 1', 'Test Module 4'],
+                    'Incomplete Modules' => ['Test Module 2', 'Test Module 3'],
+                    'Active Modules' => ['Test Module 1'],
+                    'Inactive Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
+                    'Hidden Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
+                    'Visible Modules' => ['Test Module 4'],
+                    '% Complete' => 55,
+                    'Activity Instance ID' => $activityInstance1->id,
+                    'Activity ID' => $activity->id,
+                    'Participant ID' => $group1->id(),
+                    'Snapshot Date' => $now->format(\DateTime::ATOM)
+                ]
             ], $data[0]);
 
             Assert::assertArrayHasKey(1, $data);
             Assert::assertEquals([
-                'Participant Name' => 'Test Group 2',
-                'Mandatory Modules' => ['Test Module 3', 'Test Module 4'],
-                'Optional Modules' => ['Test Module 1', 'Test Module 2'],
-                'Complete Modules' => ['Test Module 2', 'Test Module 3'],
-                'Incomplete Modules' => ['Test Module 1', 'Test Module 4'],
-                'Active Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
-                'Inactive Modules' => ['Test Module 1'],
-                'Hidden Modules' => ['Test Module 4'],
-                'Visible Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
-                '% Complete' => 55,
-                'Activity Instance ID' => $activityInstance2->id,
-                'Activity ID' => $activity->id,
-                'Participant ID' => $group2->id(),
-                'Snapshot Date' => $now->format(\DateTime::ATOM)
+                'fields' => [
+                    'Participant Name' => 'Test Group 2',
+                    'Mandatory Modules' => ['Test Module 3', 'Test Module 4'],
+                    'Optional Modules' => ['Test Module 1', 'Test Module 2'],
+                    'Complete Modules' => ['Test Module 2', 'Test Module 3'],
+                    'Incomplete Modules' => ['Test Module 1', 'Test Module 4'],
+                    'Active Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
+                    'Inactive Modules' => ['Test Module 1'],
+                    'Hidden Modules' => ['Test Module 4'],
+                    'Visible Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
+                    '% Complete' => 55,
+                    'Activity Instance ID' => $activityInstance2->id,
+                    'Activity ID' => $activity->id,
+                    'Participant ID' => $group2->id(),
+                    'Snapshot Date' => $now->format(\DateTime::ATOM)
+                ]
             ], $data[1]);
             return true;
         });
-        Bus::assertDispatched(FlushRows::class);
 
     }
-    
 }

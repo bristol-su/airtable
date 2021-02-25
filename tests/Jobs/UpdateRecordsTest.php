@@ -3,12 +3,10 @@
 namespace BristolSU\AirTable\Tests\Jobs;
 
 use BristolSU\AirTable\AirTable;
-use BristolSU\AirTable\Jobs\CreateRecords;
-use BristolSU\AirTable\Jobs\DeleteRows;
+use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\Tests\AirTable\TestCase;
-use GuzzleHttp\Client;
 
-class DeleteRowsTest extends TestCase
+class UpdateRecordsTest extends TestCase
 {
 
     /** @test */
@@ -17,14 +15,15 @@ class DeleteRowsTest extends TestCase
         $airtable->setApiKey('myApiKey1')->shouldBeCalled();
         $airtable->setBaseId('myBaseId1')->shouldBeCalled();
         $airtable->setTableName('myTableName1')->shouldBeCalled();
-        $airtable->deleteRows([
-            'rec1', 'rec2', 'rec3'
-        ])->shouldBeCalled();
-        $job = new DeleteRows([
-            'rec1', 'rec2', 'rec3'
-        ], 'myApiKey1', 'myBaseId1', 'myTableName1');
-        
+        $data = [
+            ['id' => '123', 'fields' => ['Field1' => 'Value1']],
+            ['id' => '456', 'fields' => ['Field1' => 'Value2']]
+        ];
+        $airtable->updateRows($data, true)->shouldBeCalled();
+        $job = new UpdateRecords($data, 'myApiKey1', 'myBaseId1', 'myTableName1');
+
         $job->handle($airtable->reveal());
+
     }
-    
+
 }

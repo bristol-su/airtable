@@ -8,17 +8,18 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\ResponseInterface;
 use Spatie\RateLimitedMiddleware\RateLimited;
 
 class CreateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-    private array $data;
-    private string $apiKey;
-    private string $baseId;
-    private string $tableName;
-    private bool $debug = false;
+    public array $data;
+    public string $apiKey;
+    public string $baseId;
+    public string $tableName;
+    public bool $debug = false;
 
     public function __construct(array $data, string $apiKey, string $baseId, string $tableName)
     {
@@ -38,15 +39,19 @@ class CreateRecords implements ShouldQueue
 
         return [$rateLimitedMiddleware];
     }
-    
+
     public function handle(AirTable $airTable)
     {
         $airTable->setApiKey($this->apiKey);
         $airTable->setBaseId($this->baseId);
         $airTable->setTableName($this->tableName);
         $this->log('Creating Rows');
-        $airTable->createRows($this->data, true);
+        $airTable->createRows($this->data, true, fn(array $data) => $this->withResponse($data));
         $this->log('Created Rows');
+    }
+
+    public function withResponse(array $response) {
+        // Overwrite to fire events or process the response
     }
 
     public function withDebug(bool $debug)
@@ -60,7 +65,7 @@ class CreateRecords implements ShouldQueue
         return now()->addHours(5);
     }
 
-    private function log(string $string)
+    protected function log(string $string)
     {
         if($this->debug) {
             Log::debug($string);

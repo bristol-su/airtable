@@ -3,8 +3,11 @@
 
 namespace BristolSU\AirTable\Progress;
 
+use BristolSU\AirTable\AirtableIdManager;
+use BristolSU\AirTable\Jobs\CreateProgressRecords;
 use BristolSU\AirTable\Jobs\CreateRecords;
-use BristolSU\AirTable\Jobs\FlushRows;
+use BristolSU\AirTable\Jobs\UpdateRecords;
+use BristolSU\AirTable\Models\AirtableId;
 use BristolSU\Support\ActivityInstance\Contracts\ActivityInstanceRepository;
 use BristolSU\Support\ModuleInstance\Contracts\ModuleInstanceRepository;
 use BristolSU\Support\ModuleInstance\ModuleInstance;
@@ -81,7 +84,6 @@ class AirtableHandler implements Handler
             'Participant ID' => $activityInstance->resource_id,
             'Snapshot Date' => $progress->getTimestamp()->format(\DateTime::ATOM)
         ];
-
     }
 
     /**
@@ -89,12 +91,35 @@ class AirtableHandler implements Handler
      */
     public function saveMany(array $progresses): void
     {
-        $data = [];
-        $this->log(sprintf('Parsing %d progresses', count($progresses)));
+        $toCreate = [];
+        $toUpdate = [];
+
+        /** @var AirtableIdManager $airtableIdManager */
+        $airtableIdManager = app(AirtableIdManager::class);
+
         foreach ($progresses as $progress) {
-            $data[] = $this->parseProgress($progress);
+            $parsedProgress = $this->parseProgress($progress);
+            if ($airtableIdManager->hasModel($progress->getActivityInstanceId(), 'progress_' . $this->tableName . '_' . $this->baseId)) {
+                $toUpdate[] = [
+                    'id' => $airtableIdManager->getAirtableId($progress->getActivityInstanceId(), 'progress_' . $this->tableName . '_' . $this->baseId),
+                    'fields' => $parsedProgress
+                ];
+            } else {
+                $toCreate[] = [
+                    'fields' => $parsedProgress
+                ];
+            }
         }
-        $this->createRecords($data);
+
+        $this->log(sprintf('Creating %d progress rows', count($toCreate)));
+        $this->log(sprintf('Updating %d progress rows', count($toUpdate)));
+
+        if ($toCreate) {
+            $this->createRecords($toCreate);
+        }
+        if ($toUpdate) {
+            $this->updateRecords($toUpdate);
+        }
     }
 
     public function save(Progress $progress): void
@@ -104,29 +129,35 @@ class AirtableHandler implements Handler
 
     protected function createRecords(array $data)
     {
-        $this->log('Flushing rows');
-        dispatch_now(
-            (new FlushRows($this->apiKey, $this->baseId, $this->tableName))
-                ->withDebug($this->debug)
-        );
-        
-        $this->log('Flushed rows');
-        
-        foreach(array_chunk($data, 10) as $rows) {
-            dispatch((new CreateRecords(
+        foreach (array_chunk($data, 10) as $rows) {
+            dispatch((new CreateProgressRecords(
                 $rows,
                 $this->apiKey,
                 $this->baseId,
                 $this->tableName
             ))->withDebug($this->debug));
         }
-        
+
         $this->log('Created Records');
+    }
+
+    public function updateRecords(array $data)
+    {
+        foreach (array_chunk($data, 10) as $rows) {
+            dispatch((new UpdateRecords(
+                $rows,
+                $this->apiKey,
+                $this->baseId,
+                $this->tableName
+            ))->withDebug($this->debug));
+        }
+
+        $this->log('Updated Records');
     }
 
     private function log(string $string)
     {
-        if($this->debug) {
+        if ($this->debug) {
             Log::debug($string);
         }
     }
