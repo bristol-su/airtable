@@ -30,9 +30,9 @@ class AirtableHandler extends Handler
         $itemType = 'control_' . $this->config('tableName') . '_' . $this->config('baseId');
 
         foreach($items as $item) {
-            $itemId = $item->getItem($this->config('uniqueIdRowName'));
+            $itemId = $item->getItem($this->config('uniqueIdColumnName'));
             if($itemId === null) {
-                throw new \Exception('Please add the `uniqueIdRowName` configuration to the airtable driver');
+                throw new \Exception('Please add the `uniqueIdColumnName` configuration to the airtable driver');
             }
             if($airtableIdManager->hasModel($itemId, $itemType)) {
                 $toUpdate[] = [
@@ -50,7 +50,7 @@ class AirtableHandler extends Handler
                 $this->config('apiKey'),
                 $this->config('baseId'),
                 $this->config('tableName'),
-                $this->config('uniqueIdRowName')
+                $this->config('uniqueIdColumnName')
             ))->withDebug($this->config('debug', false)));
         }
 

@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - (25/02/2021)
+
 ### Changed
 - portal-42: Dynamically update rows rather than replacing them each sync.
-- The `uniqueIdRowName` attribute is required for any AirTable driver configuration.
+- The `uniqueIdColumnName` attribute is required for any AirTable driver configuration.
 
 ## [1.0.4] - (18/06/2020)
 

@@ -38,7 +38,7 @@ class AirtableHandlerTest extends TestCase
             'apiKey' => 'myApiKey',
             'baseId' => 'myBaseId',
             'tableName' => 'myTableName',
-            'uniqueIdRowName' => 'My Row ID'
+            'uniqueIdColumnName' => 'My Row ID'
         ]);
 
         $reflector = new \ReflectionObject($handler);
@@ -92,7 +92,7 @@ class AirtableHandlerTest extends TestCase
             'apiKey' => 'myApiKey',
             'baseId' => 'myBaseId',
             'tableName' => 'myTableName',
-            'uniqueIdRowName' => 'My Row ID'
+            'uniqueIdColumnName' => 'My Row ID'
         ]);
 
         $reflector = new \ReflectionObject($handler);
@@ -147,7 +147,7 @@ class AirtableHandlerTest extends TestCase
             'apiKey' => 'myApiKey',
             'baseId' => 'myBaseId',
             'tableName' => 'myTableName',
-            'uniqueIdRowName' => 'My Row ID'
+            'uniqueIdColumnName' => 'My Row ID'
         ]);
 
         $reflector = new \ReflectionObject($handler);
@@ -208,7 +208,7 @@ class AirtableHandlerTest extends TestCase
             'apiKey' => 'myApiKey',
             'baseId' => 'myBaseId',
             'tableName' => 'myTableName',
-            'uniqueIdRowName' => 'My Row ID'
+            'uniqueIdColumnName' => 'My Row ID'
         ]);
 
         $reflector = new \ReflectionObject($handler);

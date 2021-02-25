@@ -7,12 +7,12 @@ use BristolSU\AirTable\Events\RowCreated;
 class CreateControlRecords extends CreateRecords
 {
 
-    public string $uniqueIdRowName;
+    public string $uniqueIdColumnName;
 
-    public function __construct(array $data, string $apiKey, string $baseId, string $tableName, string $uniqueIdRowName)
+    public function __construct(array $data, string $apiKey, string $baseId, string $tableName, string $uniqueIdColumnName)
     {
         parent::__construct($data, $apiKey, $baseId, $tableName);
-        $this->uniqueIdRowName = $uniqueIdRowName;
+        $this->uniqueIdColumnName = $uniqueIdColumnName;
     }
 
     public function withResponse(array $response)
@@ -20,9 +20,9 @@ class CreateControlRecords extends CreateRecords
         if(
             array_key_exists('id', $response) &&
             array_key_exists('fields', $response) &&
-            array_key_exists($this->uniqueIdRowName, $response['fields'])) {
+            array_key_exists($this->uniqueIdColumnName, $response['fields'])) {
             RowCreated::dispatch(
-                (int) $response['fields'][$this->uniqueIdRowName],
+                (int) $response['fields'][$this->uniqueIdColumnName],
                 'control_' . $this->tableName . '_' . $this->baseId,
                 $response['id'],
                 $response['fields']
