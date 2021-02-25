@@ -4,8 +4,6 @@ namespace BristolSU\AirTable\Control;
 
 use BristolSU\AirTable\AirtableIdManager;
 use BristolSU\AirTable\Jobs\CreateControlRecords;
-use BristolSU\AirTable\Jobs\CreateRecords;
-use BristolSU\AirTable\Jobs\FlushRows;
 use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\ControlDB\Export\FormattedItem;
 use BristolSU\ControlDB\Export\Handler\Handler;

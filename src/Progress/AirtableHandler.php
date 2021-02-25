@@ -99,9 +99,9 @@ class AirtableHandler implements Handler
 
         foreach ($progresses as $progress) {
             $parsedProgress = $this->parseProgress($progress);
-            if ($airtableIdManager->hasModel($progress->getActivityInstanceId(), 'progress')) {
+            if ($airtableIdManager->hasModel($progress->getActivityInstanceId(), 'progress_' . $this->tableName)) {
                 $toUpdate[] = [
-                    'id' => $airtableIdManager->getAirtableId($progress->getActivityInstanceId(), 'progress'),
+                    'id' => $airtableIdManager->getAirtableId($progress->getActivityInstanceId(), 'progress_' . $this->tableName),
                     'fields' => $parsedProgress
                 ];
             } else {

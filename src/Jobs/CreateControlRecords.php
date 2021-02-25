@@ -7,7 +7,7 @@ use BristolSU\AirTable\Events\RowCreated;
 class CreateControlRecords extends CreateRecords
 {
 
-    protected string $uniqueIdRowName;
+    public string $uniqueIdRowName;
 
     public function __construct(array $data, string $apiKey, string $baseId, string $tableName, string $uniqueIdRowName)
     {
@@ -22,7 +22,7 @@ class CreateControlRecords extends CreateRecords
             array_key_exists('fields', $response) &&
             array_key_exists($this->uniqueIdRowName, $response['fields'])) {
             RowCreated::dispatch(
-                $response['fields'][$this->uniqueIdRowName],
+                (int) $response['fields'][$this->uniqueIdRowName],
                 'control_' . $this->tableName,
                 $response['id'],
                 $response['fields']

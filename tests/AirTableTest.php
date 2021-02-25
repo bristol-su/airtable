@@ -12,11 +12,12 @@ class AirTableTest extends TestCase
 {
 
     /** @test */
-    public function the_api_key_can_be_set_and_got(){
+    public function the_api_key_can_be_set_and_got()
+    {
         $airTable = new AirTable(
             $this->prophesize(Client::class)->reveal()
         );
-        
+
         $airTable->setApiKey('1234');
         $this->assertEquals('1234', $airTable->getApiKey());
 
@@ -25,7 +26,8 @@ class AirTableTest extends TestCase
     }
 
     /** @test */
-    public function the_baseId_can_be_set_and_got(){
+    public function the_baseId_can_be_set_and_got()
+    {
         $airTable = new AirTable(
             $this->prophesize(Client::class)->reveal()
         );
@@ -38,7 +40,8 @@ class AirTableTest extends TestCase
     }
 
     /** @test */
-    public function the_tableName_can_be_set_and_got(){
+    public function the_tableName_can_be_set_and_got()
+    {
         $airTable = new AirTable(
             $this->prophesize(Client::class)->reveal()
         );
@@ -49,9 +52,10 @@ class AirTableTest extends TestCase
         $airTable->setTableName('abcd');
         $this->assertEquals('abcd', $airTable->getTableName());
     }
-    
+
     /** @test */
-    public function createRows_creates_up_to_10_rows(){
+    public function createRows_creates_up_to_10_rows()
+    {
         $client = $this->prophesize(Client::class);
         $client->request('post', 'https://api.airtable.com/v0/myBase/myTable', [
             'headers' => [
@@ -70,26 +74,21 @@ class AirTableTest extends TestCase
                 ['id' => 'rec456', 'fields' => ['Field 1' => 'val3', 'Field 2' => 'val4']],
             ]
         ])));
-        
+
         $airtable = new AirTable($client->reveal());
         $airtable->setApiKey('apiKey123');
         $airtable->setBaseId('myBase');
         $airtable->setTableName('myTable');
-        
+
         $airtable->createRows([
-            [
-                'Field 1' => 'val1',
-                'Field 2' => 'val2'
-            ],
-            [
-                'Field 1' => 'val3',
-                'Field 2' => 'val4'
-            ],
+            ['fields' => ['Field 1' => 'val1', 'Field 2' => 'val2']],
+            ['fields' => ['Field 1' => 'val3', 'Field 2' => 'val4']]
         ], false);
     }
 
     /** @test */
-    public function deleteRows_deletes_up_to_10_rows(){
+    public function deleteRows_deletes_up_to_10_rows()
+    {
         $client = $this->prophesize(Client::class);
         $client->request('delete', 'https://api.airtable.com/v0/myBase/myTable', [
             'headers' => [
@@ -113,7 +112,8 @@ class AirTableTest extends TestCase
     }
 
     /** @test */
-    public function createRows_creates_over_10_rows_with_throttling(){
+    public function createRows_creates_over_10_rows_with_throttling()
+    {
         $client = $this->prophesize(Client::class);
         $client->request('post', 'https://api.airtable.com/v0/myBase/myTable', [
             'headers' => [
@@ -175,26 +175,27 @@ class AirTableTest extends TestCase
 
         $startTime = microtime(true);
         $airtable->createRows([
-            ['Field 1' => 'val1', 'Field 2' => 'val10'],
-            ['Field 1' => 'val2', 'Field 2' => 'val9'],
-            ['Field 1' => 'val3', 'Field 2' => 'val8'],
-            ['Field 1' => 'val4', 'Field 2' => 'val7'],
-            ['Field 1' => 'val5', 'Field 2' => 'val6'],
-            ['Field 1' => 'val6', 'Field 2' => 'val5'],
-            ['Field 1' => 'val7', 'Field 2' => 'val4'],
-            ['Field 1' => 'val8', 'Field 2' => 'val3'],
-            ['Field 1' => 'val9', 'Field 2' => 'val2'],
-            ['Field 1' => 'val10', 'Field 2' => 'val1'],
-            ['Field 1' => 'val11', 'Field 2' => 'val13'],
-            ['Field 1' => 'val12', 'Field 2' => 'val14'],
-            ['Field 1' => 'val13', 'Field 2' => 'val11'],
+            ['fields' => ['Field 1' => 'val1', 'Field 2' => 'val10']],
+            ['fields' => ['Field 1' => 'val2', 'Field 2' => 'val9']],
+            ['fields' => ['Field 1' => 'val3', 'Field 2' => 'val8']],
+            ['fields' => ['Field 1' => 'val4', 'Field 2' => 'val7']],
+            ['fields' => ['Field 1' => 'val5', 'Field 2' => 'val6']],
+            ['fields' => ['Field 1' => 'val6', 'Field 2' => 'val5']],
+            ['fields' => ['Field 1' => 'val7', 'Field 2' => 'val4']],
+            ['fields' => ['Field 1' => 'val8', 'Field 2' => 'val3']],
+            ['fields' => ['Field 1' => 'val9', 'Field 2' => 'val2']],
+            ['fields' => ['Field 1' => 'val10', 'Field 2' => 'val1']],
+            ['fields' => ['Field 1' => 'val11', 'Field 2' => 'val13']],
+            ['fields' => ['Field 1' => 'val12', 'Field 2' => 'val14']],
+            ['fields' => ['Field 1' => 'val13', 'Field 2' => 'val11']],
         ], false);
         $executionTime = microtime(true) - $startTime;
         $this->assertGreaterThan(1, $executionTime);
     }
 
     /** @test */
-    public function the_script_is_delayed_if_the_rate_limit_is_hit(){
+    public function the_script_is_delayed_if_the_rate_limit_is_hit()
+    {
         $client = $this->prophesize(Client::class);
         $client->request('post', 'https://api.airtable.com/v0/myBase/myTable', [
             'headers' => [
@@ -215,7 +216,7 @@ class AirTableTest extends TestCase
                 ],
                 'typecast' => false
             ]
-        ])->shouldBeCalled()->will(function($args, $mock) {
+        ])->shouldBeCalled()->will(function ($args, $mock) {
             $mock->request('post', 'https://api.airtable.com/v0/myBase/myTable', [
                 'headers' => [
                     'Authorization' => 'Bearer apiKey123'
@@ -279,19 +280,19 @@ class AirTableTest extends TestCase
 
         $startTime = microtime(true);
         $airtable->createRows([
-            ['Field 1' => 'val1', 'Field 2' => 'val10'],
-            ['Field 1' => 'val2', 'Field 2' => 'val9'],
-            ['Field 1' => 'val3', 'Field 2' => 'val8'],
-            ['Field 1' => 'val4', 'Field 2' => 'val7'],
-            ['Field 1' => 'val5', 'Field 2' => 'val6'],
-            ['Field 1' => 'val6', 'Field 2' => 'val5'],
-            ['Field 1' => 'val7', 'Field 2' => 'val4'],
-            ['Field 1' => 'val8', 'Field 2' => 'val3'],
-            ['Field 1' => 'val9', 'Field 2' => 'val2'],
-            ['Field 1' => 'val10', 'Field 2' => 'val1'],
-            ['Field 1' => 'val11', 'Field 2' => 'val13'],
-            ['Field 1' => 'val12', 'Field 2' => 'val14'],
-            ['Field 1' => 'val13', 'Field 2' => 'val11'],
+            ['fields' => ['Field 1' => 'val1', 'Field 2' => 'val10']],
+            ['fields' => ['Field 1' => 'val2', 'Field 2' => 'val9']],
+            ['fields' => ['Field 1' => 'val3', 'Field 2' => 'val8']],
+            ['fields' => ['Field 1' => 'val4', 'Field 2' => 'val7']],
+            ['fields' => ['Field 1' => 'val5', 'Field 2' => 'val6']],
+            ['fields' => ['Field 1' => 'val6', 'Field 2' => 'val5']],
+            ['fields' => ['Field 1' => 'val7', 'Field 2' => 'val4']],
+            ['fields' => ['Field 1' => 'val8', 'Field 2' => 'val3']],
+            ['fields' => ['Field 1' => 'val9', 'Field 2' => 'val2']],
+            ['fields' => ['Field 1' => 'val10', 'Field 2' => 'val1']],
+            ['fields' => ['Field 1' => 'val11', 'Field 2' => 'val13']],
+            ['fields' => ['Field 1' => 'val12', 'Field 2' => 'val14']],
+            ['fields' => ['Field 1' => 'val13', 'Field 2' => 'val11']]
         ], false);
         $executionTime = microtime(true) - $startTime;
         $this->assertGreaterThan(4, $executionTime);
@@ -299,7 +300,8 @@ class AirTableTest extends TestCase
 
 
     /** @test */
-    public function retrieveRecords_gets_all_records_from_the_table(){
+    public function retrieveRecords_gets_all_records_from_the_table()
+    {
         $client = $this->prophesize(Client::class);
         $client->request('get', 'https://api.airtable.com/v0/myBase/myTable', [
             'headers' => [
@@ -330,7 +332,7 @@ class AirTableTest extends TestCase
                 ['id' => 'rec16', 'fields' => ['Field 13' => 'val101', 'Field 2' => 'val111']],
             ]
         ])));
-        
+
         $airtable = new AirTable($client->reveal());
         $airtable->setApiKey('apiKey123');
         $airtable->setBaseId('myBase');
@@ -346,9 +348,10 @@ class AirTableTest extends TestCase
             ['id' => 'rec16', 'fields' => ['Field 13' => 'val101', 'Field 2' => 'val111']],
         ], $response);
     }
-    
+
     /** @test */
-    public function getIdsFromTable_gets_all_IDs_from_the_table(){
+    public function getIdsFromTable_gets_all_IDs_from_the_table()
+    {
         $client = $this->prophesize(Client::class);
         $client->request('get', 'https://api.airtable.com/v0/myBase/myTable', [
             'headers' => [
@@ -389,5 +392,38 @@ class AirTableTest extends TestCase
         $this->assertEquals([
             'rec11', 'rec12', 'rec13', 'rec14', 'rec15', 'rec16'
         ], $response);
+    }
+
+    /** @test */
+    public function updateRows_updates_up_to_10_rows()
+    {
+        $client = $this->prophesize(Client::class);
+        $client->request('patch', 'https://api.airtable.com/v0/myBase/myTable', [
+            'headers' => [
+                'Authorization' => 'Bearer apiKey123'
+            ],
+            'json' => [
+                'records' => [
+                    ['id' => 'rec123', 'fields' => ['Field 1' => 'val1', 'Field 2' => 'val2']],
+                    ['id' => 'rec456', 'fields' => ['Field 1' => 'val3', 'Field 2' => 'val4']]
+                ],
+                'typecast' => false
+            ]
+        ])->shouldBeCalled()->willReturn(new Response(200, [], json_encode([
+            'records' => [
+                ['id' => 'rec123', 'fields' => ['Field 1' => 'val1', 'Field 2' => 'val2']],
+                ['id' => 'rec456', 'fields' => ['Field 1' => 'val3', 'Field 2' => 'val4']],
+            ]
+        ])));
+
+        $airtable = new AirTable($client->reveal());
+        $airtable->setApiKey('apiKey123');
+        $airtable->setBaseId('myBase');
+        $airtable->setTableName('myTable');
+
+        $airtable->updateRows([
+            ['id' => 'rec123', 'fields' => ['Field 1' => 'val1', 'Field 2' => 'val2']],
+            ['id' => 'rec456', 'fields' => ['Field 1' => 'val3', 'Field 2' => 'val4']]
+        ], false);
     }
 }

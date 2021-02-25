@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\ResponseInterface;
 use Spatie\RateLimitedMiddleware\RateLimited;
 
-abstract class CreateRecords implements ShouldQueue
+class CreateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-    protected array $data;
-    protected string $apiKey;
-    protected string $baseId;
-    protected string $tableName;
-    protected bool $debug = false;
+    public array $data;
+    public string $apiKey;
+    public string $baseId;
+    public string $tableName;
+    public bool $debug = false;
 
     public function __construct(array $data, string $apiKey, string $baseId, string $tableName)
     {
@@ -50,7 +50,9 @@ abstract class CreateRecords implements ShouldQueue
         $this->log('Created Rows');
     }
 
-    abstract public function withResponse(array $response);
+    public function withResponse(array $response) {
+        // Overwrite to fire events or process the response
+    }
 
     public function withDebug(bool $debug)
     {

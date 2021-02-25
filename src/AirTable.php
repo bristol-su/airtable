@@ -111,6 +111,7 @@ class AirTable
                 $options['json'] = $data;
             }
         }
+
         return $this->client->request($method,
             sprintf('https://api.airtable.com/v0/%s/%s', $this->baseId, $this->tableName),
             $options

@@ -3,6 +3,7 @@
 namespace BristolSU\AirTable;
 
 use BristolSU\AirTable\Models\AirtableId;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AirtableIdManager
 {
@@ -24,11 +25,19 @@ class AirtableIdManager
 
     public function saveRowId(int $modelId, string $modelType, string $airtableId): AirtableId
     {
-        return AirtableId::create([
-            'model_id' => $modelId,
-            'model_type' => $modelType,
-            'airtable_id' => $airtableId
-        ]);
+        try {
+            AirtableId::findOrFail($airtableId);
+            throw new \Exception(
+                sprintf('The airtable record ID %s is already in use.', $airtableId),
+                422
+            );
+        } catch (ModelNotFoundException $e) {
+            return AirtableId::create([
+                'model_id' => $modelId,
+                'model_type' => $modelType,
+                'airtable_id' => $airtableId
+            ]);
+        }
     }
 
 }

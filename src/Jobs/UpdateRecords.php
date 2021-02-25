@@ -14,11 +14,11 @@ class UpdateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-    private array $data;
-    private string $apiKey;
-    private string $baseId;
-    private string $tableName;
-    private bool $debug = false;
+    public array $data;
+    public string $apiKey;
+    public string $baseId;
+    public string $tableName;
+    public bool $debug = false;
 
     public function __construct(array $data, string $apiKey, string $baseId, string $tableName)
     {
@@ -38,7 +38,7 @@ class UpdateRecords implements ShouldQueue
 
         return [$rateLimitedMiddleware];
     }
-    
+
     public function handle(AirTable $airTable)
     {
         $airTable->setApiKey($this->apiKey);
@@ -60,7 +60,7 @@ class UpdateRecords implements ShouldQueue
         return now()->addHours(5);
     }
 
-    private function log(string $string)
+    protected function log(string $string)
     {
         if($this->debug) {
             Log::debug($string);
