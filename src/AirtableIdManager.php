@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 class AirtableIdManager
 {
 
-    public function hasModel(int $modelId, string $modelType): bool
+    public function hasModel(string $modelId, string $modelType): bool
     {
         return AirtableId::where('model_id', $modelId)
                 ->where('model_type', $modelType)
                 ->count() > 0;
     }
 
-    public function getAirtableId(int $modelId, string $modelType): string
+    public function getAirtableId(string $modelId, string $modelType): string
     {
         return AirtableId::where('model_id', $modelId)
             ->where('model_type', $modelType)
@@ -23,7 +23,7 @@ class AirtableIdManager
             ->airtableId();
     }
 
-    public function saveRowId(int $modelId, string $modelType, string $airtableId): AirtableId
+    public function saveRowId(string $modelId, string $modelType, string $airtableId): AirtableId
     {
         try {
             AirtableId::findOrFail($airtableId);
@@ -38,6 +38,16 @@ class AirtableIdManager
                 'airtable_id' => $airtableId
             ]);
         }
+    }
+
+    public function getIdFromColumnNames(array $data, array $columnNames): string
+    {
+        return implode('--', array_map(function($name) use ($data) {
+            if(array_key_exists($name, $data)) {
+                return (is_array($data[$name]) ? json_encode($data[$name]) : $data[$name]);
+            }
+            return '';
+        }, $columnNames));
     }
 
 }

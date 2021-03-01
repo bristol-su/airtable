@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- portal-300: The `uniqueIdColumnName` configuration can be an array. The unique ID will be formed of all the columns given.
+
 ## [2.0.0] - (25/02/2021)
 
 ### Changed
