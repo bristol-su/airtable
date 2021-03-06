@@ -16,27 +16,45 @@ class CreateProgressRecordsTest extends TestCase
         Event::fake([RowCreated::class]);
 
         $job = new CreateProgressRecords([
-            ['Field1' => 'Value1'],
-            ['Field1' => 'Value2'],
+            ['fields' => ['Field1' => 'Value1', 'Activity Instance ID' => 1]],
+            ['fields' => ['Field1' => 'Value2', 'Activity Instance ID' => 2]],
         ], 'myApiKey1', 'myBaseId1', 'myTableName1');
 
         $job->withResponse([
-            'id' => 'airtable1',
-            'fields' => [
-                'Activity Instance ID' => 11,
-                'Other' => 'Something'
-            ]
+            [
+                'id' => 'airtable1',
+                'fields' => [
+                    'Field1' => 'Value1',
+                    'Activity Instance ID' => 1
+                ]
+            ],
+            [
+                'id' => 'airtable2',
+                'fields' => [
+                    'Field1' => 'Value2',
+                    'Activity Instance ID' => 2
+                ]
+            ],
         ]);
 
+        Event::assertDispatched(RowCreated::class, function(RowCreated $event) {
+            return $event->modelId === '1' &&
+                $event->modelType === 'progress_myTableName1_myBaseId1' &&
+                $event->airtableRowId === 'airtable1' &&
+                $event->fields === [
+                    'Field1' => 'Value1',
+                    'Activity Instance ID' => 1
+                ];
+        });
+
         Event::assertdispatched(RowCreated::class, function(RowCreated $event) {
-            $this->assertEquals(11, $event->modelId);
-            $this->assertEquals('progress_myTableName1_myBaseId1', $event->modelType);
-            $this->assertEquals('airtable1', $event->airtableRowId);
-            $this->assertEquals([
-                'Activity Instance ID' => 11,
-                'Other' => 'Something'
-            ], $event->fields);
-            return true;
+            return $event->modelId === '2' &&
+                $event->modelType === 'progress_myTableName1_myBaseId1' &&
+                $event->airtableRowId === 'airtable2' &&
+                $event->fields === [
+                    'Field1' => 'Value2',
+                    'Activity Instance ID' => 2
+                ];
         });
 
     }

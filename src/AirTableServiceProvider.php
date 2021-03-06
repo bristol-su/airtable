@@ -52,6 +52,9 @@ class AirTableServiceProvider extends ServiceProvider
             if(!array_key_exists('baseId', $config)) {
                 $missingKey = 'baseId';
             }
+            if(!array_key_exists('uniqueIdColumnName', $config)) {
+                $missingKey = 'uniqueIdColumnName';
+            }
             if($missingKey !== null) {
                 throw new \Exception(sprintf('The [%s] field must be given', $missingKey));
             }
@@ -63,5 +66,5 @@ class AirTableServiceProvider extends ServiceProvider
     }
 
 
-    
+
 }

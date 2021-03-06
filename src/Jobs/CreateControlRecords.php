@@ -2,14 +2,16 @@
 
 namespace BristolSU\AirTable\Jobs;
 
+use BristolSU\AirTable\AirtableIdManager;
 use BristolSU\AirTable\Events\RowCreated;
+use Illuminate\Support\Arr;
 
 class CreateControlRecords extends CreateRecords
 {
 
-    public string $uniqueIdColumnName;
+    public array $uniqueIdColumnName;
 
-    public function __construct(array $data, string $apiKey, string $baseId, string $tableName, string $uniqueIdColumnName)
+    public function __construct(array $data, string $apiKey, string $baseId, string $tableName, array $uniqueIdColumnName)
     {
         parent::__construct($data, $apiKey, $baseId, $tableName);
         $this->uniqueIdColumnName = $uniqueIdColumnName;
@@ -17,16 +19,17 @@ class CreateControlRecords extends CreateRecords
 
     public function withResponse(array $response)
     {
-        if(
-            array_key_exists('id', $response) &&
-            array_key_exists('fields', $response) &&
-            array_key_exists($this->uniqueIdColumnName, $response['fields'])) {
-            RowCreated::dispatch(
-                (int) $response['fields'][$this->uniqueIdColumnName],
-                'control_' . $this->tableName . '_' . $this->baseId,
-                $response['id'],
-                $response['fields']
-            );
+        $airtableIdManager = app(AirtableIdManager::class);
+        foreach($this->data as $record) {
+            $airtableRecord = array_shift($response);
+            if(array_key_exists('id', $airtableRecord)) {
+                RowCreated::dispatch(
+                    $airtableIdManager->getIdFromColumnNames($record['fields'], $this->uniqueIdColumnName),
+                    'control_' . $this->tableName . '_' . $this->baseId,
+                    $airtableRecord['id'],
+                    $record['fields']
+                );
+            }
         }
     }
 

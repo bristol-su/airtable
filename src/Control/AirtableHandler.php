@@ -8,6 +8,7 @@ use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\ControlDB\Export\FormattedItem;
 use BristolSU\ControlDB\Export\Handler\Handler;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -30,9 +31,13 @@ class AirtableHandler extends Handler
         $itemType = 'control_' . $this->config('tableName') . '_' . $this->config('baseId');
 
         foreach($items as $item) {
-            $itemId = $item->getItem($this->config('uniqueIdColumnName'));
-            if($itemId === null) {
-                throw new \Exception('Please add the `uniqueIdColumnName` configuration to the airtable driver');
+            $itemId = $airtableIdManager->getIdFromColumnNames(
+                $item->toArray(),
+                Arr::wrap($this->config('uniqueIdColumnName'))
+            );
+
+            if($itemId === null || $itemId === '') {
+                throw new \Exception('Please ensure the `uniqueIdColumnName` gives a unique ID for every record.');
             }
             if($airtableIdManager->hasModel($itemId, $itemType)) {
                 $toUpdate[] = [
@@ -40,17 +45,18 @@ class AirtableHandler extends Handler
                     'fields' => $item->toArray()
                 ];
             } else {
-                $toCreate[] = ['fields' => $item->toArray()];
+                $toCreate[] = [
+                    'fields' => $item->toArray()
+                ];
             }
         }
-
         foreach(array_chunk($toCreate, 10) as $data) {
             dispatch((new CreateControlRecords(
                 $data,
                 $this->config('apiKey'),
                 $this->config('baseId'),
                 $this->config('tableName'),
-                $this->config('uniqueIdColumnName')
+                Arr::wrap($this->config('uniqueIdColumnName'))
             ))->withDebug($this->config('debug', false)));
         }
 

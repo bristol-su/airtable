@@ -83,9 +83,12 @@ class AirtableHandlerTest extends TestCase
         $airtableIdManager->hasModel(1, 'control_myTableName_myBaseId')->willReturn(true);
         $airtableIdManager->hasModel(2, 'control_myTableName_myBaseId')->willReturn(true);
         $airtableIdManager->hasModel(3, 'control_myTableName_myBaseId')->willReturn(true);
-        $airtableIdManager->getAirtableId(1, 'control_myTableName_myBaseId')->willReturn('airtable1');
-        $airtableIdManager->getAirtableId(2, 'control_myTableName_myBaseId')->willReturn('airtable2');
-        $airtableIdManager->getAirtableId(3, 'control_myTableName_myBaseId')->willReturn('airtable3');
+        $airtableIdManager->getIdFromColumnNames($item1->toArray(), ['My Row ID'])->willReturn('1');
+        $airtableIdManager->getIdFromColumnNames($item2->toArray(), ['My Row ID'])->willReturn('2');
+        $airtableIdManager->getIdFromColumnNames($item3->toArray(), ['My Row ID'])->willReturn('3');
+        $airtableIdManager->getAirtableId('1', 'control_myTableName_myBaseId')->willReturn('airtable1');
+        $airtableIdManager->getAirtableId('2', 'control_myTableName_myBaseId')->willReturn('airtable2');
+        $airtableIdManager->getAirtableId('3', 'control_myTableName_myBaseId')->willReturn('airtable3');
         $this->instance(AirtableIdManager::class, $airtableIdManager->reveal());
 
         $handler = new AirtableHandler([
@@ -102,9 +105,9 @@ class AirtableHandlerTest extends TestCase
 
         Bus::assertDispatched(UpdateRecords::class, function(UpdateRecords $job) {
             $this->assertEquals([
-                ['id' => 'airtable1', 'fields' => ['My Row ID' => 1, 'Another Column' => 'abc', 'Yet Another Column' => 'def']],
-                ['id' => 'airtable2', 'fields' => ['My Row ID' => 2, 'Another Column' => 'ghi', 'Yet Another Column' => 'jkl']],
-                ['id' => 'airtable3', 'fields' => ['My Row ID' => 3, 'Another Column' => 'mno', 'Yet Another Column' => 'pqr']]
+                ['id' => 'airtable1', 'fields' => ['My Row ID' => '1', 'Another Column' => 'abc', 'Yet Another Column' => 'def']],
+                ['id' => 'airtable2', 'fields' => ['My Row ID' => '2', 'Another Column' => 'ghi', 'Yet Another Column' => 'jkl']],
+                ['id' => 'airtable3', 'fields' => ['My Row ID' => '3', 'Another Column' => 'mno', 'Yet Another Column' => 'pqr']]
             ], $job->data);
             $this->assertEquals('myApiKey', $job->apiKey);
             $this->assertEquals('myBaseId', $job->baseId);
@@ -138,9 +141,12 @@ class AirtableHandlerTest extends TestCase
         $airtableIdManager->hasModel(1, 'control_myTableName_myBaseId')->willReturn(true);
         $airtableIdManager->hasModel(2, 'control_myTableName_myBaseId')->willReturn(false);
         $airtableIdManager->hasModel(3, 'control_myTableName_myBaseId')->willReturn(true);
-        $airtableIdManager->getAirtableId(1, 'control_myTableName_myBaseId')->willReturn('airtable1');
-        $airtableIdManager->getAirtableId(2, 'control_myTableName_myBaseId')->shouldNotBeCalled();
-        $airtableIdManager->getAirtableId(3, 'control_myTableName_myBaseId')->willReturn('airtable3');
+        $airtableIdManager->getIdFromColumnNames($item1->toArray(), ['My Row ID'])->willReturn('1');
+        $airtableIdManager->getIdFromColumnNames($item2->toArray(), ['My Row ID'])->willReturn('2');
+        $airtableIdManager->getIdFromColumnNames($item3->toArray(), ['My Row ID'])->willReturn('3');
+        $airtableIdManager->getAirtableId('1', 'control_myTableName_myBaseId')->willReturn('airtable1');
+        $airtableIdManager->getAirtableId('2', 'control_myTableName_myBaseId')->shouldNotBeCalled();
+        $airtableIdManager->getAirtableId('3', 'control_myTableName_myBaseId')->willReturn('airtable3');
         $this->instance(AirtableIdManager::class, $airtableIdManager->reveal());
 
         $handler = new AirtableHandler([
@@ -157,15 +163,15 @@ class AirtableHandlerTest extends TestCase
 
         Bus::assertDispatched(UpdateRecords::class, function(UpdateRecords $job) {
             $this->assertEquals([
-                ['id' => 'airtable1', 'fields' => ['My Row ID' => 1, 'Another Column' => 'abc', 'Yet Another Column' => 'def']],
-                ['id' => 'airtable3', 'fields' => ['My Row ID' => 3, 'Another Column' => 'mno', 'Yet Another Column' => 'pqr']]
+                ['id' => 'airtable1', 'fields' => ['My Row ID' => '1', 'Another Column' => 'abc', 'Yet Another Column' => 'def']],
+                ['id' => 'airtable3', 'fields' => ['My Row ID' => '3', 'Another Column' => 'mno', 'Yet Another Column' => 'pqr']]
             ], $job->data);
             return true;
         });
 
         Bus::assertDispatched(CreateControlRecords::class, function(CreateControlRecords $job) {
             $this->assertEquals([
-                ['fields' => ['My Row ID' => 2, 'Another Column' => 'ghi', 'Yet Another Column' => 'jkl']]
+                ['fields' => ['My Row ID' => '2', 'Another Column' => 'ghi', 'Yet Another Column' => 'jkl']]
             ], $job->data);
             return true;
         });
@@ -197,9 +203,11 @@ class AirtableHandlerTest extends TestCase
         $airtableIdManager = $this->prophesize(AirtableIdManager::class);
         foreach($updateItems as $item) {
             $airtableIdManager->hasModel($item->getItem('My Row ID'), 'control_myTableName_myBaseId')->willReturn(true);
+            $airtableIdManager->getIdFromColumnNames($item->toArray(), ['My Row ID'])->willReturn($item->getItem('My Row ID'));
             $airtableIdManager->getAirtableId($item->getItem('My Row ID'), 'control_myTableName_myBaseId')->willReturn('airtable' . $item->getItem('My Row ID'));
         }
         foreach($createItems as $item) {
+            $airtableIdManager->getIdFromColumnNames($item->toArray(), ['My Row ID'])->willReturn($item->getItem('My Row ID'));
             $airtableIdManager->hasModel($item->getItem('My Row ID'), 'control_myTableName_myBaseId')->willReturn(false);
         }
         $this->instance(AirtableIdManager::class, $airtableIdManager->reveal());
@@ -220,7 +228,7 @@ class AirtableHandlerTest extends TestCase
         Bus::assertDispatchedTimes(CreateControlRecords::class, 4);
     }
 
-    private function newItem(array $attributes)
+    private function newItem(array $attributes): FormattedItem
     {
         $item = $this->prophesize(FormattedItem::class);
         foreach($attributes as $key => $value) {

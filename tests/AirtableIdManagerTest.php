@@ -78,4 +78,43 @@ class AirtableIdManagerTest extends TestCase
         $airtableIdManager->saveRowId(11, 'progress_123', 'airtable456');
     }
 
+    /**
+     * @test
+     * @dataProvider columnNameIdDataProvider
+     */
+    public function it_creates_an_id_from_column_name_and_data_correctly(array $columnNames, array $data, string $result)
+    {
+        $manager = new AirtableIdManager();
+        $this->assertEquals(
+            $result,
+            $manager->getIdFromColumnNames($data, $columnNames)
+        );
+    }
+
+    public function columnNameIdDataProvider(): array
+    {
+        return [
+            [
+                ['Name', 'ID', 'Another'],
+                ['Name' => 'My Name', 'ID' => 5, 'Another' => 'Thing'],
+                'My Name--5--Thing'
+            ],
+            [
+                ['Name', 'Another?'],
+                ['Name' => 'My Name', 'ID' => 5, 'Another?' => 'Thingabc1'],
+                'My Name--Thingabc1'
+            ],
+            [
+                ['Name'],
+                ['Name' => 'My Name', 'ID' => 5, 'Another?' => 'Thingabc1'],
+                'My Name'
+            ],
+            [
+                ['Name', 'an-array'],
+                ['Name' => 'My Name', 'ID' => 5, 'Another?' => 'Thingabc1', 'an-array' => ['one', 'two' => 'three']],
+                'My Name--{"0":"one","two":"three"}'
+            ]
+        ];
+    }
+
 }
