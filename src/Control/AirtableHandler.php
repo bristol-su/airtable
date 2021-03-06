@@ -35,8 +35,9 @@ class AirtableHandler extends Handler
                 $item->toArray(),
                 Arr::wrap($this->config('uniqueIdColumnName'))
             );
-            if($itemId === null) {
-                throw new \Exception('Please add the `uniqueIdColumnName` configuration to the airtable driver');
+
+            if($itemId === null || $itemId === '') {
+                throw new \Exception('Please ensure the `uniqueIdColumnName` gives a unique ID for every record.');
             }
             if($airtableIdManager->hasModel($itemId, $itemType)) {
                 $toUpdate[] = [
@@ -44,10 +45,11 @@ class AirtableHandler extends Handler
                     'fields' => $item->toArray()
                 ];
             } else {
-                $toCreate[] = ['fields' => $item->toArray()];
+                $toCreate[] = [
+                    'fields' => $item->toArray()
+                ];
             }
         }
-
         foreach(array_chunk($toCreate, 10) as $data) {
             dispatch((new CreateControlRecords(
                 $data,

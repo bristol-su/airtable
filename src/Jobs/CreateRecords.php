@@ -46,7 +46,6 @@ class CreateRecords implements ShouldQueue
         $airTable->setBaseId($this->baseId);
         $airTable->setTableName($this->tableName);
         $this->log('Creating Rows');
-        dd($this->data);
         $airTable->createRows($this->data, true, fn(array $data) => $this->withResponse($data));
         $this->log('Created Rows');
     }

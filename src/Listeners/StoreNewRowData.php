@@ -21,7 +21,7 @@ class StoreNewRowData
     public function handle(RowCreated $event)
     {
         $this->airtableIdManager->saveRowId(
-            (int) $event->modelId,
+            $event->modelId,
             $event->modelType,
             $event->airtableRowId
         );

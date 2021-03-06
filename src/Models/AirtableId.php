@@ -23,9 +23,9 @@ class AirtableId extends Model
         return (string) $this->airtable_id;
     }
 
-    public function modelId(): int
+    public function modelId(): string
     {
-        return (int) $this->model_id;
+        return $this->model_id;
     }
 
     public function modelType(): string

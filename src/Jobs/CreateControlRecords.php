@@ -20,15 +20,18 @@ class CreateControlRecords extends CreateRecords
     public function withResponse(array $response)
     {
         $airtableIdManager = app(AirtableIdManager::class);
-        if(
-            array_key_exists('id', $response) &&
-            array_key_exists('fields', $response)) {
-            RowCreated::dispatch(
-                $airtableIdManager->getIdFromColumnNames($response['fields'], $this->uniqueIdColumnName),
-                'control_' . $this->tableName . '_' . $this->baseId,
-                $response['id'],
-                $response['fields']
-            );
+        foreach($this->data as $record) {
+            $airtableRecord = array_shift($response);
+            if(
+                array_key_exists('id', $airtableRecord) &&
+                array_key_exists('fields', $airtableRecord)) {
+                RowCreated::dispatch(
+                    $airtableIdManager->getIdFromColumnNames($record['fields'], $this->uniqueIdColumnName),
+                    'control_' . $this->tableName . '_' . $this->baseId,
+                    $airtableRecord['id'],
+                    $record
+                );
+            }
         }
     }
 

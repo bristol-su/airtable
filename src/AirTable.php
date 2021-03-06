@@ -167,9 +167,7 @@ class AirTable
 
             if($withResponse !== null) {
                 $data = json_decode($response->getBody()->getContents(), true);
-                foreach($data['records'] as $record) {
-                    $withResponse($record);
-                }
+                $withResponse($data['records']);
             }
         });
     }
