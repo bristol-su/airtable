@@ -11,15 +11,12 @@ class CreateProgressRecords extends CreateRecords
     {
         foreach($this->data as $record) {
             $airtableRecord = array_shift($response);
-            if(
-                array_key_exists('id', $airtableRecord) &&
-                array_key_exists('fields', $airtableRecord) &&
-                array_key_exists('Activity Instance ID', $record)) {
+            if(array_key_exists('id', $airtableRecord)) {
                 RowCreated::dispatch(
-                    $record['Activity Instance ID'],
+                    $record['fields']['Activity Instance ID'],
                     'progress_' . $this->tableName . '_' . $this->baseId,
                     $airtableRecord['id'],
-                    $record
+                    $record['fields']
                 );
             }
         }

@@ -14,30 +14,49 @@ class CreateControlRecordsTest extends TestCase
 
     /** @test */
     public function it_dispatches_an_event_with_the_correct_fields(){
+
         Event::fake([RowCreated::class]);
 
         $job = new CreateControlRecords([
-            ['Field1' => 'Value1'],
-            ['Field1' => 'Value2'],
-        ], 'myApiKey1', 'myBaseId1', 'myTableName1', 'My Row ID');
+            ['fields' => ['Field1' => 'Value1', 'My Row ID' => 1]],
+            ['fields' => ['Field1' => 'Value2', 'My Row ID' => 2]],
+        ], 'myApiKey1', 'myBaseId1', 'myTableName1', ['My Row ID']);
 
         $job->withResponse([
-            'id' => 'airtable1',
-            'fields' => [
-                'My Row ID' => 11,
-                'Other' => 'Something'
-            ]
+            [
+                'id' => 'airtable1',
+                'fields' => [
+                    'Field1' => 'Value1',
+                    'My Row ID' => 1
+                ]
+            ],
+            [
+                'id' => 'airtable2',
+                'fields' => [
+                    'Field1' => 'Value2',
+                    'My Row ID' => 2
+                ]
+            ],
         ]);
 
+        Event::assertDispatched(RowCreated::class, function(RowCreated $event) {
+            return $event->modelId === '1' &&
+                $event->modelType === 'control_myTableName1_myBaseId1' &&
+                $event->airtableRowId === 'airtable1' &&
+                $event->fields === [
+                    'Field1' => 'Value1',
+                    'My Row ID' => 1
+                ];
+        });
+
         Event::assertdispatched(RowCreated::class, function(RowCreated $event) {
-            $this->assertEquals(11, $event->modelId);
-            $this->assertEquals('control_myTableName1_myBaseId1', $event->modelType);
-            $this->assertEquals('airtable1', $event->airtableRowId);
-            $this->assertEquals([
-                'My Row ID' => 11,
-                'Other' => 'Something'
-            ], $event->fields);
-            return true;
+            return $event->modelId === '2' &&
+                $event->modelType === 'control_myTableName1_myBaseId1' &&
+                $event->airtableRowId === 'airtable2' &&
+                $event->fields === [
+                    'Field1' => 'Value2',
+                    'My Row ID' => 2
+                ];
         });
 
     }

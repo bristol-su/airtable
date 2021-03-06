@@ -22,14 +22,12 @@ class CreateControlRecords extends CreateRecords
         $airtableIdManager = app(AirtableIdManager::class);
         foreach($this->data as $record) {
             $airtableRecord = array_shift($response);
-            if(
-                array_key_exists('id', $airtableRecord) &&
-                array_key_exists('fields', $airtableRecord)) {
+            if(array_key_exists('id', $airtableRecord)) {
                 RowCreated::dispatch(
                     $airtableIdManager->getIdFromColumnNames($record['fields'], $this->uniqueIdColumnName),
                     'control_' . $this->tableName . '_' . $this->baseId,
                     $airtableRecord['id'],
-                    $record
+                    $record['fields']
                 );
             }
         }
