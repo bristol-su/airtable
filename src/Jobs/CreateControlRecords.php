@@ -5,6 +5,7 @@ namespace BristolSU\AirTable\Jobs;
 use BristolSU\AirTable\AirtableIdManager;
 use BristolSU\AirTable\Events\RowCreated;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 class CreateControlRecords extends CreateRecords
 {
@@ -33,6 +34,12 @@ class CreateControlRecords extends CreateRecords
         }
     }
 
+    protected function log(string $string)
+    {
+        if($this->debug) {
+            Log::debug($string);
+        }
+    }
 
 
 }

@@ -23,6 +23,8 @@ class AirtableHandler extends Handler
      */
     protected function save(array $items)
     {
+        $this->log(sprintf('Processing %u items to save to AirTable', count($items)));
+
         $toCreate = [];
         $toUpdate = [];
 
@@ -40,11 +42,13 @@ class AirtableHandler extends Handler
                 throw new \Exception('Please ensure the `uniqueIdColumnName` gives a unique ID for every record.');
             }
             if($airtableIdManager->hasModel($itemId, $itemType)) {
+                $this->log(sprintf('Set model #%u (%s) to be updated', $itemId, $itemType));
                 $toUpdate[] = [
                     'id' => $airtableIdManager->getAirtableId($itemId, $itemType),
                     'fields' => $item->toArray()
                 ];
             } else {
+                $this->log(sprintf('Set model #%u (%s) to be created', $itemId, $itemType));
                 $toCreate[] = [
                     'fields' => $item->toArray()
                 ];

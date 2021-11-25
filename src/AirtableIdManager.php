@@ -19,6 +19,7 @@ class AirtableIdManager
     {
         return AirtableId::where('model_id', $modelId)
             ->where('model_type', $modelType)
+            ->latest()
             ->firstOrFail()
             ->airtableId();
     }
