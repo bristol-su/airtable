@@ -13,8 +13,7 @@ use Spatie\RateLimitedMiddleware\RateLimited;
 class UpdateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
-    
-    public $queue = 'airtable';
+
 
     public array $data;
     public string $apiKey;
@@ -28,6 +27,7 @@ class UpdateRecords implements ShouldQueue
         $this->apiKey = $apiKey;
         $this->baseId = $baseId;
         $this->tableName = $tableName;
+        $this->onQueue('airtable');
     }
 
     public function middleware()

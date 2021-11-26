@@ -15,8 +15,6 @@ class CreateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-    public $queue = 'airtable';
-
     public array $data;
     public string $apiKey;
     public string $baseId;
@@ -29,6 +27,7 @@ class CreateRecords implements ShouldQueue
         $this->apiKey = $apiKey;
         $this->baseId = $baseId;
         $this->tableName = $tableName;
+        $this->onQueue('airtable');
     }
 
     public function middleware()
