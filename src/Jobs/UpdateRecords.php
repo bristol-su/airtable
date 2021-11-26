@@ -14,7 +14,6 @@ class UpdateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
-
     public array $data;
     public string $apiKey;
     public string $baseId;
