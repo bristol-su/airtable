@@ -13,6 +13,8 @@ use Spatie\RateLimitedMiddleware\RateLimited;
 class UpdateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
+    
+    public $queue = 'airtable';
 
     public array $data;
     public string $apiKey;

@@ -15,6 +15,8 @@ class CreateRecords implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue;
 
+    public $queue = 'airtable';
+
     public array $data;
     public string $apiKey;
     public string $baseId;
