@@ -78,6 +78,9 @@ class AirtableHandler implements Handler
             'Visible Modules' => $this->filterModules(function (ModuleInstanceProgress $moduleInstanceProgress) {
                 return $moduleInstanceProgress->isVisible();
             }, $progress, $moduleInstances),
+            'Remaining Modules' => $this->filterModules(function (ModuleInstanceProgress $moduleInstanceProgress) {
+                return $moduleInstanceProgress->isMandatory() && !$moduleInstanceProgress->isComplete();
+            }, $progress, $moduleInstances),
             '% Complete' => $progress->getPercentage(),
             'Activity Instance ID' => $activityInstance->id,
             'Activity ID' => $progress->getActivityId(),
