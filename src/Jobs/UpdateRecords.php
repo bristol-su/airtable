@@ -26,7 +26,7 @@ class UpdateRecords implements ShouldQueue
         $this->apiKey = $apiKey;
         $this->baseId = $baseId;
         $this->tableName = $tableName;
-        $this->onQueue('airtable');
+        $this->onQueue(sprintf('airtable_%s', config('app.env')));
     }
 
     public function middleware()
