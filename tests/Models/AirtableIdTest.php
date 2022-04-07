@@ -10,7 +10,7 @@ class AirtableIdTest extends TestCase
 
     /** @test */
     public function it_can_be_created(){
-        $model = factory(AirtableId::class)->create([
+        $model = AirtableId::factory()->create([
             'airtable_id' => 'airtable1',
             'model_type' => 'model1',
             'model_id' => 5
@@ -28,7 +28,7 @@ class AirtableIdTest extends TestCase
     /** @test */
     public function the_properties_can_be_retrieved_from_the_model(){
         /** @var AirtableId $model */
-        $model = factory(AirtableId::class)->create([
+        $model = AirtableId::factory()->create([
             'airtable_id' => 'airtable1',
             'model_type' => 'model1',
             'model_id' => 5

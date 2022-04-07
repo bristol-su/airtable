@@ -5,6 +5,8 @@ namespace BristolSU\AirTable\Tests\Progress;
 use BristolSU\AirTable\Jobs\CreateProgressRecords;
 use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\ControlDB\Models\DataGroup;
+use BristolSU\ControlDB\Models\Tags\GroupTag;
+use BristolSU\ControlDB\Models\Tags\GroupTagCategory;
 use BristolSU\Support\Activity\Activity;
 use BristolSU\Support\ActivityInstance\ActivityInstance;
 use BristolSU\Support\ModuleInstance\ModuleInstance;
@@ -23,8 +25,8 @@ class AirtableHandlerTest extends TestCase
     public function it_passes_the_apiKey_tableName_and_baseId_to_each_job(){
         Bus::fake([CreateProgressRecords::class, UpdateRecords::class]);
 
-        $activity = factory(Activity::class)->create();
-        $activityInstance = factory(ActivityInstance::class)->create([
+        $activity = Activity::factory()->create();
+        $activityInstance = ActivityInstance::factory()->create([
             'activity_id' => $activity->id,
         ]);
         $progress = Progress::create($activity->id, $activityInstance->id, Carbon::now(), false, 55);
@@ -53,19 +55,24 @@ class AirtableHandlerTest extends TestCase
         Bus::fake([CreateProgressRecords::class, UpdateRecords::class]);
 
         $now = Carbon::now();
-        $dataGroup = factory(DataGroup::class)->create(['name' => 'Test Group 1']);
+        $dataGroup = DataGroup::factory()->create(['name' => 'Test Group 1']);
         $group = $this->newGroup(['data_provider_id' => $dataGroup->id()]);
+        $groupTagCategory = GroupTagCategory::factory()->create(['reference' => 'base-ref']);
+        $groupTag1 = GroupTag::factory()->create(['reference' => 'one', 'tag_category_id' => $groupTagCategory->id]);
+        $groupTag2 = GroupTag::factory()->create(['reference' => 'two', 'tag_category_id' => $groupTagCategory->id]);
+        $group->addTag($groupTag1);
+        $group->addTag($groupTag2);
 
-        $activity = factory(Activity::class)->create();
-        $activityInstance = factory(ActivityInstance::class)->create([
+        $activity = Activity::factory()->create();
+        $activityInstance = ActivityInstance::factory()->create([
             'activity_id' => $activity->id,
             'resource_type' => 'group',
             'resource_id' => $group->id()
         ]);
-        $module1 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 1']);
-        $module2 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 2']);
-        $module3 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 3']);
-        $module4 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 4']);
+        $module1 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 1']);
+        $module2 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 2']);
+        $module3 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 3']);
+        $module4 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 4']);
 
         $progress = Progress::create($activity->id, $activityInstance->id, $now, false, 55);
         $moduleProgress1 = ModuleInstanceProgress::create($module1->id, true, true, 10, true, false);
@@ -99,7 +106,9 @@ class AirtableHandlerTest extends TestCase
                     'Inactive Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
                     'Hidden Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
                     'Visible Modules' => ['Test Module 4'],
-                    '% Complete' => 55,
+                    'Remaining Modules' => ['Test Module 2'],
+                    'Tags' => ['base-ref.one', 'base-ref.two'],
+                    '% Complete' => 55.0,
                     'Activity Instance ID' => $activityInstance->id,
                     'Activity ID' => $activity->id,
                     'Participant ID' => $group->id(),
@@ -116,27 +125,27 @@ class AirtableHandlerTest extends TestCase
         Bus::fake([CreateProgressRecords::class, UpdateRecords::class]);
 
         $now = Carbon::now();
-        $dataGroup1 = factory(DataGroup::class)->create(['name' => 'Test Group 1']);
+        $dataGroup1 = DataGroup::factory()->create(['name' => 'Test Group 1']);
         $group1 = $this->newGroup(['data_provider_id' => $dataGroup1->id()]);
-        $dataGroup2 = factory(DataGroup::class)->create(['name' => 'Test Group 2']);
+        $dataGroup2 = DataGroup::factory()->create(['name' => 'Test Group 2']);
         $group2 = $this->newGroup(['data_provider_id' => $dataGroup2->id()]);
 
-        $activity = factory(Activity::class)->create();
-        $activityInstance1 = factory(ActivityInstance::class)->create([
+        $activity = Activity::factory()->create();
+        $activityInstance1 = ActivityInstance::factory()->create([
             'activity_id' => $activity->id,
             'resource_type' => 'group',
             'resource_id' => $group1->id()
         ]);
-        $activityInstance2 = factory(ActivityInstance::class)->create([
+        $activityInstance2 = ActivityInstance::factory()->create([
             'activity_id' => $activity->id,
             'resource_type' => 'group',
             'resource_id' => $group2->id()
         ]);
 
-        $module1 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 1']);
-        $module2 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 2']);
-        $module3 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 3']);
-        $module4 = factory(ModuleInstance::class)->create(['activity_id' => $activity->id, 'name' => 'Test Module 4']);
+        $module1 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 1']);
+        $module2 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 2']);
+        $module3 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 3']);
+        $module4 = ModuleInstance::factory()->create(['activity_id' => $activity->id, 'name' => 'Test Module 4']);
 
         $progress1 = Progress::create($activity->id, $activityInstance1->id, $now, false, 55);
         $moduleProgress1_1 = ModuleInstanceProgress::create($module1->id, true, true, 10, true, false);
@@ -181,7 +190,9 @@ class AirtableHandlerTest extends TestCase
                     'Inactive Modules' => ['Test Module 2', 'Test Module 3', 'Test Module 4'],
                     'Hidden Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
                     'Visible Modules' => ['Test Module 4'],
-                    '% Complete' => 55,
+                    '% Complete' => 55.0,
+                    'Remaining Modules' => ['Test Module 2'],
+                    'Tags' => [],
                     'Activity Instance ID' => $activityInstance1->id,
                     'Activity ID' => $activity->id,
                     'Participant ID' => $group1->id(),
@@ -201,7 +212,9 @@ class AirtableHandlerTest extends TestCase
                     'Inactive Modules' => ['Test Module 1'],
                     'Hidden Modules' => ['Test Module 4'],
                     'Visible Modules' => ['Test Module 1', 'Test Module 2', 'Test Module 3'],
-                    '% Complete' => 55,
+                    'Remaining Modules' => ['Test Module 4'],
+                    'Tags' => [],
+                    '% Complete' => 55.0,
                     'Activity Instance ID' => $activityInstance2->id,
                     'Activity ID' => $activity->id,
                     'Participant ID' => $group2->id(),

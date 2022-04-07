@@ -8,6 +8,7 @@ use BristolSU\AirTable\Jobs\CreateProgressRecords;
 use BristolSU\AirTable\Jobs\CreateRecords;
 use BristolSU\AirTable\Jobs\UpdateRecords;
 use BristolSU\AirTable\Models\AirtableId;
+use BristolSU\Module\DataEntry\Models\ActivityInstance;
 use BristolSU\Support\ActivityInstance\Contracts\ActivityInstanceRepository;
 use BristolSU\Support\ModuleInstance\Contracts\ModuleInstanceRepository;
 use BristolSU\Support\ModuleInstance\ModuleInstance;
@@ -43,6 +44,7 @@ class AirtableHandler implements Handler
 
     protected function parseProgress(Progress $progress)
     {
+        /** @var ActivityInstance $activityInstance */
         $activityInstance = app(ActivityInstanceRepository::class)
             ->getById($progress->getActivityInstanceId());
         $moduleInstances = app(ModuleInstanceRepository::class)
@@ -81,6 +83,7 @@ class AirtableHandler implements Handler
             'Remaining Modules' => $this->filterModules(function (ModuleInstanceProgress $moduleInstanceProgress) {
                 return $moduleInstanceProgress->isMandatory() && !$moduleInstanceProgress->isComplete();
             }, $progress, $moduleInstances),
+            'Tags' => $activityInstance->participant->tags()->map(fn($tag) => $tag->full_reference)->toArray(),
             '% Complete' => $progress->getPercentage(),
             'Activity Instance ID' => $activityInstance->id,
             'Activity ID' => $progress->getActivityId(),

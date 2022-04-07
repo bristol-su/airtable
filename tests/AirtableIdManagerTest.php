@@ -13,7 +13,7 @@ class AirtableIdManagerTest extends TestCase
     public function hasModel_returns_true_if_a_model_matching_the_given_criteria_exists(){
         $airtableIdManager = new AirtableIdManager();
 
-        $model = factory(AirtableId::class)->create([
+        $model = AirtableId::factory()->create([
             'airtable_id' => 'airtable123',
             'model_type' => 'progress_123',
             'model_id' => 11
@@ -33,7 +33,7 @@ class AirtableIdManagerTest extends TestCase
     public function getAirtableId_returns_the_airtable_id_if_the_model_exists(){
         $airtableIdManager = new AirtableIdManager();
 
-        $model = factory(AirtableId::class)->create([
+        $model = AirtableId::factory()->create([
             'airtable_id' => 'airtable123',
             'model_type' => 'progress_123',
             'model_id' => 11
@@ -68,7 +68,7 @@ class AirtableIdManagerTest extends TestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('The airtable record ID airtable456 is already in use.');
 
-        $model = factory(AirtableId::class)->create([
+        $model = AirtableId::factory()->create([
             'airtable_id' => 'airtable456',
             'model_type' => 'progress_123',
             'model_id' => 11
