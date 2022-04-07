@@ -51,4 +51,19 @@ class AirtableIdManager
         }, $columnNames));
     }
 
+    public function hasReservedModel(string $modelId, string $modelType): bool
+    {
+        return cache()->has($this->getCacheKey($modelId, $modelType));
+    }
+
+    public function reserveModel(string $modelId, string $modelType): void
+    {
+        cache()->put($this->getCacheKey($modelId, $modelType), true, 900);
+    }
+
+    private function getCacheKey(string $modelId, string $modelType): string
+    {
+        return sprintf('AirtableIdManager_%s_%s', $modelId, $modelType);
+    }
+
 }

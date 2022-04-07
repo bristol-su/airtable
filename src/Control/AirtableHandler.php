@@ -47,7 +47,8 @@ class AirtableHandler extends Handler
                     'id' => $airtableIdManager->getAirtableId($itemId, $itemType),
                     'fields' => $item->toArray()
                 ];
-            } else {
+            } elseif(!$airtableIdManager->hasReservedModel($itemId, $itemType)) {
+                $airtableIdManager->reserveModel($itemId, $itemType);
                 $this->log(sprintf('Set model #%u (%s) to be created', $itemId, $itemType));
                 $toCreate[] = [
                     'fields' => $item->toArray()
