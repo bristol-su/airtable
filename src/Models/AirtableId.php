@@ -2,10 +2,14 @@
 
 namespace BristolSU\AirTable\Models;
 
+use Database\Factories\AirtableIdFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AirtableId extends Model
 {
+    use HasFactory;
+
     protected $table = 'airtable_ids';
 
     protected $primaryKey = 'airtable_id';
@@ -42,5 +46,10 @@ class AirtableId extends Model
     protected function serializeDate(\DateTimeInterface $date)
     {
         return $date->format('Y-m-d H:i:s');
+    }
+
+    protected static function newFactory()
+    {
+        return new AirtableIdFactory();
     }
 }

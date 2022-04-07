@@ -23,7 +23,7 @@ class AirtableIdFactory extends Factory
     {
         return [
             'airtable_id' => sprintf('rec%s', \Illuminate\Support\Str::random('10')),
-            'model_type' => sprintf('progress_tbl%s_app%s', $this->faker->numberBetween(1111111111, 9999999999), $faker->numberBetween(1111111111, 9999999999)),
+            'model_type' => sprintf('progress_tbl%s_app%s', $this->faker->numberBetween(1111111111, 9999999999), $this->faker->numberBetween(1111111111, 9999999999)),
             'model_id' => 2,
         ];
     }
