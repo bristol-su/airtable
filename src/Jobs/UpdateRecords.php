@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\RateLimitedWithRedis;
 use Illuminate\Support\Facades\Log;
 use Spatie\RateLimitedMiddleware\RateLimited;
 
@@ -31,13 +32,16 @@ class UpdateRecords implements ShouldQueue
 
     public function middleware()
     {
-        $rateLimitedMiddleware = (new RateLimited())
-            ->key('airtable')
-            ->allow(1)
-            ->everySeconds(1)
-            ->releaseAfterSeconds(3);
+        return [
+            (new RateLimitedWithRedis('airtable'))
+        ];
+//        $rateLimitedMiddleware = (new RateLimited())
+//            ->key('airtable')
+//            ->allow(1)
+//            ->everySeconds(1)
+//            ->releaseAfterSeconds(3);
 
-        return [$rateLimitedMiddleware];
+//        return [$rateLimitedMiddleware];
     }
 
     public function handle(AirTable $airTable)
