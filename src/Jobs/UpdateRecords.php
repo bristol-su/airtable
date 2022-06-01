@@ -33,15 +33,8 @@ class UpdateRecords implements ShouldQueue
     public function middleware()
     {
         return [
-            (new RateLimitedWithRedis('airtable'))
+            (new RateLimited('airtable'))
         ];
-//        $rateLimitedMiddleware = (new RateLimited())
-//            ->key('airtable')
-//            ->allow(1)
-//            ->everySeconds(1)
-//            ->releaseAfterSeconds(3);
-
-//        return [$rateLimitedMiddleware];
     }
 
     public function handle(AirTable $airTable)

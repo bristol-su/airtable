@@ -32,13 +32,9 @@ class CreateRecords implements ShouldQueue
 
     public function middleware()
     {
-        $rateLimitedMiddleware = (new RateLimited())
-            ->key('airtable')
-            ->allow(1)
-            ->everySeconds(1)
-            ->releaseAfterSeconds(3);
-
-        return [$rateLimitedMiddleware];
+        return [
+            (new RateLimited('airtable'))
+        ];
     }
 
     public function handle(AirTable $airTable)
