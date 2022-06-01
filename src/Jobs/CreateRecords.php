@@ -7,9 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
-use Psr\Http\Message\ResponseInterface;
-use Spatie\RateLimitedMiddleware\RateLimited;
 
 class CreateRecords implements ShouldQueue
 {
